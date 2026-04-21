@@ -1,0 +1,63 @@
+{
+  "name": "claude-code-cost-tracker",
+  "displayName": "Claude Code Cost Tracker",
+  "description": "Track your Claude Code API costs locally - zero config, privacy-first",
+  "version": "0.1.0",
+  "publisher": "nofeel",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Other", "Visualization"],
+  "keywords": ["claude", "claude-code", "cost", "tracking", "ai", "tokens"],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claudeCostTracker.showDashboard",
+        "title": "Claude Cost Tracker: Show Dashboard"
+      },
+      {
+        "command": "claudeCostTracker.refresh",
+        "title": "Claude Cost Tracker: Refresh Data"
+      }
+    ],
+    "configuration": {
+      "title": "Claude Cost Tracker",
+      "properties": {
+        "claudeCostTracker.useCommunityPricing": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Fetch the community-maintained pricing JSON for non-Anthropic models (GLM, DeepSeek, Kimi, etc). When enabled and `#claudeCostTracker.pricingUrl#` is empty, the built-in community URL is used. Default `false` for privacy."
+        },
+        "claudeCostTracker.pricingUrl": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Optional URL to a pricing JSON. Overrides the community URL when set. Format: `{ \"<model>\": { \"input\": <usd-per-1M>, \"output\": ..., \"cache_write\": ..., \"cache_read\": ... } }`. Cached locally for 1 hour."
+        },
+        "claudeCostTracker.customPricing": {
+          "type": "object",
+          "default": {},
+          "markdownDescription": "Inline pricing overrides (highest priority). Each entry: `\"<model>\": { \"input\": ..., \"output\": ..., \"cache_write\": ..., \"cache_read\": ... }` in USD per 1M tokens."
+        },
+        "claudeCostTracker.spikeThresholdUsd": {
+          "type": "number",
+          "default": 1.0,
+          "minimum": 0,
+          "description": "Mark assistant turns above this USD cost as spikes."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.3.0"
+  }
+}
