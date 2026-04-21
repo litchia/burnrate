@@ -2,11 +2,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import { analyze, defaultClaudeRoot } from "./analyzer";
-import { PricingTable, sanitizePricing, ModelPrice } from "./pricing";
-import { loadRemotePricing, RemoteLoadResult } from "./remotePricing";
-
-const DEFAULT_COMMUNITY_PRICING_URL =
-  "https://gist.githubusercontent.com/litchia/81a8014f27784b0ac8333f6371b6bb41/raw/llm-api-pricing.json";
+import { PricingTable, sanitizePricing, ModelPrice, BUILTIN_PRICING } from "./pricing";
 
 let panel: vscode.WebviewPanel | undefined;
 let currentRange: "today" | "month" | "all" = "month";
@@ -40,7 +36,6 @@ function showDashboard(context: vscode.ExtensionContext) {
       localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, "src"))],
     },
   );
-  panel.webview.html = renderHtml(context, panel.webview);
   panel.webview.onDidReceiveMessage(async (msg) => {
     if (msg?.type === "setRange") {
       currentRange = msg.range;
@@ -51,60 +46,63 @@ function showDashboard(context: vscode.ExtensionContext) {
       vscode.commands.executeCommand("workbench.action.openSettings", "claudeCostTracker");
     }
   });
+  panel.webview.html = renderHtml(context, panel.webview);
   panel.onDidDispose(() => { panel = undefined; });
 }
 
 async function postData(context: vscode.ExtensionContext, p: vscode.WebviewPanel, range: "today" | "month" | "all") {
+  const requestId = nextRequestId();
   try {
     const cfg = vscode.workspace.getConfiguration("claudeCostTracker");
     const customPricing: Record<string, ModelPrice> = sanitizePricing(cfg.get("customPricing") ?? {});
-    const useCommunity: boolean = cfg.get("useCommunityPricing") ?? false;
-    const userPricingUrl: string = (cfg.get("pricingUrl") as string) ?? "";
-    const spikeThreshold: number = (cfg.get("spikeThresholdUsd") as number) ?? 1.0;
-
-    let remote: Record<string, ModelPrice> = {};
-    let remoteInfo: RemoteLoadResult | null = null;
-    let resolvedUrl = userPricingUrl.trim() || (useCommunity ? DEFAULT_COMMUNITY_PRICING_URL : "");
-
-    if (resolvedUrl) {
-      const cacheDir = context.globalStorageUri.fsPath;
-      remoteInfo = await loadRemotePricing(resolvedUrl, cacheDir);
-      remote = remoteInfo.data;
-    }
-
-    const pricing = new PricingTable(customPricing, remote);
+    const rawSpikeThreshold = cfg.get("spikeThresholdUsd");
+    const spikeThreshold: number = typeof rawSpikeThreshold === "number" && isFinite(rawSpikeThreshold) ? rawSpikeThreshold : 1.0;
+    const pricing = new PricingTable(customPricing);
     const since = sinceFor(range);
-    const result = await analyze(defaultClaudeRoot(), { since, pricing, spikeThreshold });
+    const result = await analyze(defaultClaudeRoot(), {
+      since,
+      pricing,
+      spikeThreshold,
+      includeHourBuckets: range === "today",
+      includeBucketModels: range === "today" ? "hour" : "day",
+    });
 
     p.webview.postMessage({
       type: "data",
+      requestId,
       range,
       result,
       rootExists: fs.existsSync(defaultClaudeRoot()),
       pricingMeta: {
         customCount: Object.keys(customPricing).length,
-        remoteCount: Object.keys(remote).length,
-        remoteUrl: resolvedUrl || null,
-        remoteSource: remoteInfo?.source ?? null,
-        remoteFetchedAt: remoteInfo?.fetchedAt ?? null,
-        remoteError: remoteInfo?.error ?? null,
-        useCommunity,
+        builtinCount: Object.keys(BUILTIN_PRICING).length,
+        spikeThreshold,
       },
     });
   } catch (err: any) {
-    p.webview.postMessage({ type: "error", message: err?.message || String(err) });
+    p.webview.postMessage({ type: "error", requestId, message: err?.message || String(err) });
   }
+}
+
+let requestSeq = 0;
+function nextRequestId(): number {
+  requestSeq = (requestSeq + 1) % Number.MAX_SAFE_INTEGER;
+  return requestSeq;
 }
 
 function sinceFor(range: "today" | "month" | "all"): string | undefined {
   const now = new Date();
-  if (range === "today") return now.toISOString().slice(0, 10);
+  if (range === "today") return localDateKey(now);
   if (range === "month") {
-    const y = now.getUTCFullYear();
-    const m = String(now.getUTCMonth() + 1).padStart(2, "0");
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
     return `${y}-${m}-01`;
   }
   return undefined;
+}
+
+function localDateKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function renderHtml(context: vscode.ExtensionContext, webview: vscode.Webview): string {

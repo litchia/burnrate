@@ -1,108 +1,585 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta http-equiv="Content-Security-Policy"
-      content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-{{NONCE}}';">
-<title>Claude Cost Tracker</title>
-<style>
-  :root {
-    --accent: #378ADD;
-    --danger: var(--vscode-errorForeground, #f48771);
-    --warn-bg: var(--vscode-inputValidation-warningBackground, #4a3b1a);
-    --muted: var(--vscode-descriptionForeground);
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 24px;
-    font-family: var(--vscode-font-family);
-    color: var(--vscode-foreground);
-    background: var(--vscode-editor-background);
-    font-size: 13px;
-  }
-  h1 { font-size: 20px; margin: 0 0 4px; font-weight: 600; }
-  .sub { color: var(--muted); margin-bottom: 20px; font-size: 12px; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-{{NONCE}}';" />
+    <title>Claude Cost Tracker</title>
+    <style>
+      :root {
+        --accent: #378add;
+        --danger: var(--vscode-errorForeground, #f48771);
+        --warn-bg: var(--vscode-inputValidation-warningBackground, #4a3b1a);
+        --muted: var(--vscode-descriptionForeground);
+        --heat-accent: var(--vscode-gitDecoration-addedResourceForeground, #2ea043);
+        --heat-0: var(--vscode-input-background);
+        --heat-1: color-mix(in srgb, var(--vscode-editor-background) 78%, var(--heat-accent) 22%);
+        --heat-2: color-mix(in srgb, var(--vscode-editor-background) 62%, var(--heat-accent) 38%);
+        --heat-3: color-mix(in srgb, var(--vscode-editor-background) 44%, var(--heat-accent) 56%);
+        --heat-4: color-mix(in srgb, var(--vscode-editor-background) 24%, var(--heat-accent) 76%);
 
-  .toolbar { display: flex; gap: 8px; margin-bottom: 24px; align-items: center; }
-  .pill {
-    background: var(--vscode-button-secondaryBackground);
-    color: var(--vscode-button-secondaryForeground);
-    border: 1px solid var(--vscode-panel-border);
-    padding: 6px 14px; border-radius: 999px;
-    cursor: pointer; font-size: 12px;
-  }
-  .pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .spacer { flex: 1; }
-  .refresh {
-    background: transparent; color: var(--muted); border: 1px solid var(--vscode-panel-border);
-    padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;
-  }
+        /* Large heatmap sizing (month + today share the same cell size). */
+        --heat-lg-cell: 36px;
+        --heat-lg-gap: 10px;
+        --heat-lg-radius: 8px;
+        --heat-lg-label: var(--vscode-editor-foreground, var(--vscode-foreground));
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+        font-family: var(--vscode-font-family);
+        color: var(--vscode-foreground);
+        background: var(--vscode-editor-background);
+        font-size: 13px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 4px;
+        font-weight: 600;
+      }
+      .sub {
+        color: var(--muted);
+        margin-bottom: 20px;
+        font-size: 12px;
+      }
 
-  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-  .card {
-    background: var(--vscode-editorWidget-background);
-    border: 1px solid var(--vscode-panel-border);
-    border-radius: 8px; padding: 18px;
-  }
-  .card .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-  .card .value { font-size: 26px; font-weight: 600; }
-  .card .meta { color: var(--muted); font-size: 11px; margin-top: 6px; }
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        align-items: center;
+      }
+      .pill {
+        background: var(--vscode-button-secondaryBackground);
+        color: var(--vscode-button-secondaryForeground);
+        border: 1px solid var(--vscode-panel-border);
+        padding: 6px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .pill.active {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      .spacer {
+        flex: 1;
+      }
+      .refresh {
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--vscode-panel-border);
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
 
-  .section { margin-bottom: 28px; }
-  .section h2 { font-size: 13px; font-weight: 600; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .card {
+        background: var(--vscode-editorWidget-background);
+        border: 1px solid var(--vscode-panel-border);
+        border-radius: 8px;
+        padding: 18px;
+      }
+      .card .label {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+      .card .value {
+        font-size: 26px;
+        font-weight: 600;
+      }
+      .card .meta {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 6px;
+      }
 
-  .chart { width: 100%; height: 160px; background: var(--vscode-editorWidget-background); border: 1px solid var(--vscode-panel-border); border-radius: 8px; padding: 12px; }
+      .section {
+        margin-bottom: 28px;
+      }
+      .section h2 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0 0 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--muted);
+      }
+      .section-meta {
+        color: var(--muted);
+        font-size: 12px;
+        margin: -6px 0 12px;
+      }
 
-  .project-row {
-    display: grid; grid-template-columns: 1fr 90px 70px;
-    gap: 12px; align-items: center;
-    padding: 10px 0; border-bottom: 1px solid var(--vscode-panel-border);
-  }
-  .project-row:last-child { border-bottom: none; }
-  .project-name { font-family: var(--vscode-editor-font-family, monospace); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .bar-wrap { background: var(--vscode-input-background); height: 6px; border-radius: 3px; overflow: hidden; }
-  .bar { height: 100%; background: var(--accent); }
-  .project-cost { text-align: right; font-weight: 600; }
-  .project-meta { color: var(--muted); font-size: 11px; text-align: right; }
+      .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .section-head h2 {
+        margin: 0;
+      }
+      .segmented {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .seg-btn,
+      .month-nav {
+        background: var(--vscode-button-secondaryBackground);
+        color: var(--vscode-button-secondaryForeground);
+        border: 1px solid var(--vscode-panel-border);
+        padding: 5px 10px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .seg-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .month-nav[disabled] {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .month-label {
+        min-width: 110px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .heatmap-shell {
+        background: var(--vscode-editorWidget-background);
+        border: 1px solid var(--vscode-panel-border);
+        border-radius: 8px;
+        padding: 14px;
+        flex: 0 0 auto;
+      }
+      .heatmap-scroll {
+        overflow-x: auto;
+      }
+      .heatmap-calendar {
+        display: grid;
+        grid-template-columns: repeat(7, 14px);
+        grid-auto-rows: 14px;
+        gap: 6px;
+        align-items: center;
+        width: max-content;
+      }
+      .heatmap-hours {
+        display: grid;
+        grid-template-columns: repeat(24, 14px);
+        gap: 6px;
+        width: max-content;
+      }
+      .weekday-head {
+        display: grid;
+        grid-template-columns: repeat(7, 14px);
+        gap: 6px;
+        margin-bottom: 8px;
+        width: max-content;
+      }
+      .weekday-head span {
+        font-size: 9px;
+        line-height: 14px;
+        color: var(--muted);
+        text-align: center;
+      }
+      .heatmap-hour-label {
+        font-size: 10px;
+        color: var(--muted);
+        text-align: center;
+      }
+      .heatmap-cell {
+        aspect-ratio: 1 / 1;
+        width: 14px;
+        min-height: 14px;
+        border-radius: 3px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        position: relative;
+      }
+      .heatmap-cell.empty {
+        background: transparent;
+        border-color: transparent;
+      }
+      .heatmap-cell.active {
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+      }
+      .heatmap-legend {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 12px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .heatmap-month-wrap {
+        width: max-content;
+        margin: 0 auto;
+      }
+      .legend-scale {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .legend-chip {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+      }
+      .heatmap-overview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 14px;
+        margin-bottom: 16px;
+      }
+      .mini-month {
+        background: var(--vscode-editorWidget-background);
+        border: 1px solid var(--vscode-panel-border);
+        border-radius: 8px;
+        padding: 10px;
+        cursor: pointer;
+      }
+      .mini-month.active {
+        border-color: var(--accent);
+        box-shadow: inset 0 0 0 1px var(--accent);
+      }
+      .mini-month-title {
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .mini-month-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 9px);
+        grid-template-rows: repeat(6, 9px);
+        gap: 4px;
+        width: max-content;
+      }
+      .heatmap-detail-layout {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: flex-start;
+      }
+      .detail-card {
+        background: var(--vscode-editorWidget-background);
+        border: 1px solid var(--vscode-panel-border);
+        border-radius: 8px;
+        padding: 16px;
+        flex: 1 1 380px;
+        min-width: 340px;
+      }
+      .detail-block + .detail-block {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--vscode-panel-border);
+      }
+      .detail-label {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+      .detail-value {
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+      .detail-meta {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 6px;
+        line-height: 1.5;
+      }
+      .detail-models {
+        margin-top: 10px;
+        display: grid;
+        gap: 8px;
+      }
+      .detail-model-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+      }
+      .detail-model-name {
+        font-family: var(--vscode-editor-font-family, monospace);
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .detail-model-badge {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 1px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        font-size: 10px;
+        line-height: 1.3;
+        vertical-align: middle;
+      }
+      .detail-model-metrics {
+        font-size: 11px;
+        color: var(--muted);
+        text-align: right;
+        white-space: nowrap;
+      }
+      .detail-empty {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .large-calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, var(--heat-lg-cell));
+        grid-template-rows: repeat(6, var(--heat-lg-cell));
+        gap: var(--heat-lg-gap);
+        width: max-content;
+      }
+      .large-calendar-head {
+        display: grid;
+        grid-template-columns: repeat(7, var(--heat-lg-cell));
+        gap: calc(var(--heat-lg-gap) - 2px);
+        margin-bottom: 10px;
+        width: max-content;
+      }
+      .large-calendar-head span {
+        font-size: 11px;
+        color: var(--muted);
+        text-align: center;
+        width: var(--heat-lg-cell);
+      }
+      .large-cell {
+        width: var(--heat-lg-cell);
+        height: var(--heat-lg-cell);
+        border-radius: calc(var(--heat-lg-radius) - 2px);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        position: relative;
+      }
+      .large-cell.empty {
+        background: transparent;
+        border-color: transparent;
+      }
+      .large-cell-day {
+        position: absolute;
+        top: 6px;
+        left: 8px;
+        font-size: 11px;
+        color: var(--heat-lg-label);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      }
+      .large-hours-grid {
+        display: grid;
+        grid-template-columns: repeat(8, var(--heat-lg-cell));
+        grid-template-rows: repeat(3, var(--heat-lg-cell));
+        gap: calc(var(--heat-lg-gap) - 2px);
+        width: max-content;
+        margin: 0 auto;
+      }
+      .hour-cell {
+        width: var(--heat-lg-cell);
+        height: var(--heat-lg-cell);
+        border-radius: var(--heat-lg-radius);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        position: relative;
+      }
+      .hour-cell-label {
+        position: absolute;
+        left: 8px;
+        bottom: 6px;
+        font-size: 11px;
+        color: var(--heat-lg-label);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+      }
+      body.vscode-light .large-cell-day,
+      body.vscode-light .hour-cell-label {
+        text-shadow: none;
+      }
+      @media (max-width: 900px) {
+        :root {
+          --heat-lg-cell: 32px;
+          --heat-lg-gap: 8px;
+          --heat-lg-radius: 7px;
+        }
+        .detail-card {
+          min-width: 0;
+          flex-basis: 100%;
+        }
+        .large-calendar-grid,
+        .large-calendar-head {
+          grid-template-columns: repeat(7, var(--heat-lg-cell));
+        }
+        .large-calendar-grid {
+          grid-template-rows: repeat(6, var(--heat-lg-cell));
+        }
+        .large-cell {
+          width: var(--heat-lg-cell);
+          height: var(--heat-lg-cell);
+        }
+        .large-hours-grid {
+          grid-template-columns: repeat(8, var(--heat-lg-cell));
+          grid-template-rows: repeat(3, var(--heat-lg-cell));
+        }
+        .hour-cell {
+          width: var(--heat-lg-cell);
+          height: var(--heat-lg-cell);
+        }
+      }
 
-  .alerts { background: var(--warn-bg); border: 1px solid var(--vscode-inputValidation-warningBorder, #b89a4e); border-radius: 8px; padding: 14px; }
-  .alert-row { padding: 6px 0; font-size: 12px; }
-  .alert-row .cost { color: var(--danger); font-weight: 600; }
+      .project-row {
+        display: grid;
+        grid-template-columns: 1fr 90px 70px;
+        gap: 12px;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--vscode-panel-border);
+      }
+      .project-row:last-child {
+        border-bottom: none;
+      }
+      .project-name {
+        font-family: var(--vscode-editor-font-family, monospace);
+        font-size: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .bar-wrap {
+        background: var(--vscode-input-background);
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .bar {
+        height: 100%;
+        background: var(--accent);
+      }
+      .project-cost {
+        text-align: right;
+        font-weight: 600;
+      }
+      .project-meta {
+        color: var(--muted);
+        font-size: 11px;
+        text-align: right;
+      }
 
-  .empty { text-align: center; padding: 40px; color: var(--muted); }
-  .model-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12px; gap: 12px; }
-  .model-row .name { font-family: monospace; }
+      .alerts {
+        background: var(--warn-bg);
+        border: 1px solid var(--vscode-inputValidation-warningBorder, #b89a4e);
+        border-radius: 8px;
+        padding: 14px;
+      }
+      .alert-subhead {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--vscode-panel-border);
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .alert-row {
+        padding: 6px 0;
+        font-size: 12px;
+      }
+      .alert-row .cost {
+        color: var(--danger);
+        font-weight: 600;
+      }
 
-  .pricing-meta { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
-  .pricing-meta a, .warn-banner a { color: var(--accent); text-decoration: none; }
-  .pricing-meta a:hover, .warn-banner a:hover { text-decoration: underline; }
-  .warn-banner {
-    background: var(--warn-bg);
-    border: 1px solid var(--vscode-inputValidation-warningBorder, #b89a4e);
-    border-radius: 6px; padding: 10px 14px; font-size: 12px; margin-bottom: 16px;
-  }
-  .warn-banner code { background: rgba(0,0,0,0.2); padding: 1px 5px; border-radius: 3px; }
-  .warn { color: var(--danger); }
-  .warn-pill {
-    display: inline-block; font-size: 10px; color: var(--danger);
-    padding: 1px 6px; border: 1px solid var(--danger); border-radius: 999px; margin-left: 4px;
-  }
-</style>
-</head>
-<body>
-  <h1>Claude Cost Tracker</h1>
-  <div class="sub" id="generatedAt">Loading…</div>
+      .empty {
+        text-align: center;
+        padding: 40px;
+        color: var(--muted);
+      }
+      .model-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 12px;
+        gap: 12px;
+      }
+      .model-row .name {
+        font-family: monospace;
+      }
 
-  <div class="toolbar">
-    <button class="pill" data-range="today">Today</button>
-    <button class="pill active" data-range="month">This Month</button>
-    <button class="pill" data-range="all">All Time</button>
-    <div class="spacer"></div>
-    <button class="refresh" id="refreshBtn">Refresh</button>
-  </div>
+      .pricing-meta {
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .pricing-meta a,
+      .warn-banner a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      .pricing-meta a:hover,
+      .warn-banner a:hover {
+        text-decoration: underline;
+      }
+      .warn-banner {
+        background: var(--warn-bg);
+        border: 1px solid var(--vscode-inputValidation-warningBorder, #b89a4e);
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-size: 12px;
+        margin-bottom: 16px;
+      }
+      .warn-banner code {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 1px 5px;
+        border-radius: 3px;
+      }
+      .warn {
+        color: var(--danger);
+      }
+      .warn-pill {
+        display: inline-block;
+        font-size: 10px;
+        color: var(--danger);
+        padding: 1px 6px;
+        border: 1px solid var(--danger);
+        border-radius: 999px;
+        margin-left: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Claude Cost Tracker</h1>
+    <div class="sub" id="generatedAt">Loading…</div>
 
-  <div id="content"></div>
+    <div class="toolbar">
+      <button class="pill" data-range="today">Today</button>
+      <button class="pill active" data-range="month">This Month</button>
+      <button class="pill" data-range="all">All Time</button>
+      <div class="spacer"></div>
+      <button class="refresh" id="refreshBtn">Refresh</button>
+    </div>
 
-  <script nonce="{{NONCE}}">{{INLINE_JS}}</script>
-</body>
+    <div id="content"></div>
+
+    <script nonce="{{NONCE}}">{{INLINE_JS}}</script>
+  </body>
 </html>

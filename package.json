@@ -26,20 +26,10 @@
     "configuration": {
       "title": "Claude Cost Tracker",
       "properties": {
-        "claudeCostTracker.useCommunityPricing": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Fetch the community-maintained pricing JSON for non-Anthropic models (GLM, DeepSeek, Kimi, etc). When enabled and `#claudeCostTracker.pricingUrl#` is empty, the built-in community URL is used. Default `false` for privacy."
-        },
-        "claudeCostTracker.pricingUrl": {
-          "type": "string",
-          "default": "",
-          "markdownDescription": "Optional URL to a pricing JSON. Overrides the community URL when set. Format: `{ \"<model>\": { \"input\": <usd-per-1M>, \"output\": ..., \"cache_write\": ..., \"cache_read\": ... } }`. Cached locally for 1 hour."
-        },
         "claudeCostTracker.customPricing": {
           "type": "object",
           "default": {},
-          "markdownDescription": "Inline pricing overrides (highest priority). Each entry: `\"<model>\": { \"input\": ..., \"output\": ..., \"cache_write\": ..., \"cache_read\": ... }` in USD per 1M tokens."
+          "markdownDescription": "Inline pricing overrides for models not covered by the built-in Claude Opus / Sonnet and GPT pricing. Each entry: `\"<model>\": { \"input\": ..., \"output\": ..., \"cache_write_5m\": ..., \"cache_write_1h\": ..., \"cache_read\": ... }` in USD per 1M tokens. `cache_write` is still accepted as a legacy alias for `cache_write_5m`."
         },
         "claudeCostTracker.spikeThresholdUsd": {
           "type": "number",
