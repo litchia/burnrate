@@ -75,6 +75,12 @@ export function defaultClaudeRoot(): string {
 
 export function decodeProjectDir(dirName: string): string {
   if (!dirName) return dirName;
+  // Claude Code on macOS/Linux encodes "/work/foo" as "-work-foo".
+  // On Windows the encoding is unverified and ambiguous (drive letters,
+  // backslashes), so we only attempt decoding on POSIX. The extension
+  // relies on the per-event `cwd` field for project attribution; this
+  // decoder is a best-effort fallback for events missing cwd.
+  if (process.platform === "win32") return dirName;
   return dirName.replace(/-/g, "/");
 }
 

@@ -1,0 +1,31 @@
+# Source — only ship compiled output
+src/**
+!src/webview/index.html
+!src/webview/main.js
+
+# Build artifacts we don't need at runtime
+out/**/*.map
+tsconfig.json
+
+# Repo metadata
+.git/**
+.github/**
+.gitignore
+.vscode/**
+.vscode-test/**
+.DS_Store
+Thumbs.db
+
+# Project docs not relevant to end users
+ROADMAP.md
+CLAUDE.md
+CLAUDE.local.md
+
+# Stray files from other tools
+folder-alias.json
+private-folder-alias.json
+
+# Node
+node_modules/**
+package-lock.json
+*.vsix

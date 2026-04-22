@@ -558,9 +558,19 @@
 
   function shortPath(p) {
     if (!p) return "—";
-    const parts = p.split("/").filter(Boolean);
+    // Split on both POSIX "/" and Windows "\". Detect Windows absolute
+    // paths so we can preserve the drive letter when truncating;
+    // otherwise the user sees ".../foo/bar" with no indication of
+    // which drive it lived on.
+    const isWindowsAbs = /^[A-Za-z]:[\\/]/.test(p);
+    const sep = isWindowsAbs ? "\\" : "/";
+    const parts = p.split(/[\\/]+/).filter(Boolean);
     if (parts.length <= 3) return p;
-    return ".../" + parts.slice(-3).join("/");
+    if (isWindowsAbs) {
+      // parts[0] is the drive ("C:"); keep it pinned.
+      return parts[0] + sep + "..." + sep + parts.slice(-3).join(sep);
+    }
+    return "..." + sep + parts.slice(-3).join(sep);
   }
 
   function rangeLabel(r) {

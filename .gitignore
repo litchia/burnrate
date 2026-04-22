@@ -3,5 +3,7 @@ out/
 *.vsix
 .vscode-test/
 .DS_Store
+Thumbs.db
 folder-alias.json
 private-folder-alias.json
+CLAUDE.local.md
