@@ -1,41 +1,70 @@
 {
-  "name": "claude-code-cost-tracker",
-  "displayName": "Claude Code Cost Tracker",
-  "description": "Track your Claude Code API costs locally - zero config, privacy-first",
-  "version": "0.1.0",
-  "publisher": "nofeel",
+  "name": "burnrate",
+  "displayName": "BurnRate",
+  "description": "Local cost & quota dashboard for Claude Code and Codex CLI - zero config, privacy-first",
+  "version": "1.1.0-dev",
+  "publisher": "litchia",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/litchia/burnrate.git"
+  },
+  "homepage": "https://github.com/litchia/burnrate",
+  "bugs": {
+    "url": "https://github.com/litchia/burnrate/issues"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
   "categories": ["Other", "Visualization"],
-  "keywords": ["claude", "claude-code", "cost", "tracking", "ai", "tokens"],
+  "keywords": ["claude", "claude-code", "codex", "openai", "cost", "tracking", "ai", "tokens", "quota"],
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
+        "command": "burnRate.showDashboard",
+        "title": "BurnRate: Show Dashboard"
+      },
+      {
+        "command": "burnRate.refresh",
+        "title": "BurnRate: Refresh Data"
+      },
+      {
         "command": "claudeCostTracker.showDashboard",
-        "title": "Claude Cost Tracker: Show Dashboard"
+        "title": "BurnRate: Show Dashboard (legacy alias)"
       },
       {
         "command": "claudeCostTracker.refresh",
-        "title": "Claude Cost Tracker: Refresh Data"
+        "title": "BurnRate: Refresh Data (legacy alias)"
       }
     ],
     "configuration": {
-      "title": "Claude Cost Tracker",
+      "title": "BurnRate",
       "properties": {
+        "burnRate.customPricing": {
+          "type": "object",
+          "default": {},
+          "markdownDescription": "Inline pricing overrides for models not covered by the built-in Claude / GPT pricing. Each entry: `\"<model>\": { \"input\": ..., \"output\": ..., \"cache_write_5m\": ..., \"cache_write_1h\": ..., \"cache_read\": ..., \"reasoning_output\": ... }` in USD per 1M tokens. `cache_write` is still accepted as a legacy alias for `cache_write_5m`. `reasoning_output` defaults to `output`."
+        },
+        "burnRate.spikeThresholdUsd": {
+          "type": "number",
+          "default": 1.0,
+          "minimum": 0,
+          "description": "Mark assistant turns above this USD cost as spikes."
+        },
         "claudeCostTracker.customPricing": {
           "type": "object",
           "default": {},
-          "markdownDescription": "Inline pricing overrides for models not covered by the built-in Claude Opus / Sonnet and GPT pricing. Each entry: `\"<model>\": { \"input\": ..., \"output\": ..., \"cache_write_5m\": ..., \"cache_write_1h\": ..., \"cache_read\": ... }` in USD per 1M tokens. `cache_write` is still accepted as a legacy alias for `cache_write_5m`."
+          "markdownDeprecationMessage": "**Deprecated.** Use `burnRate.customPricing` instead. The legacy key is still read for one minor version.",
+          "markdownDescription": "**Deprecated** — moved to `burnRate.customPricing`."
         },
         "claudeCostTracker.spikeThresholdUsd": {
           "type": "number",
           "default": 1.0,
           "minimum": 0,
-          "description": "Mark assistant turns above this USD cost as spikes."
+          "markdownDeprecationMessage": "**Deprecated.** Use `burnRate.spikeThresholdUsd` instead. The legacy key is still read for one minor version.",
+          "description": "Deprecated — moved to burnRate.spikeThresholdUsd."
         }
       }
     }

@@ -7,19 +7,35 @@ import { PricingTable, sanitizePricing, ModelPrice, BUILTIN_PRICING } from "./pr
 let panel: vscode.WebviewPanel | undefined;
 let currentRange: "today" | "month" | "all" = "month";
 
+const LEGACY_DEPRECATION_FLAG = "burnRate.legacyDeprecationShown.v1";
+
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
+    // Primary commands.
+    vscode.commands.registerCommand("burnRate.showDashboard", () => showDashboard(context)),
+    vscode.commands.registerCommand("burnRate.refresh", () => {
+      if (panel) postData(context, panel, currentRange);
+      else showDashboard(context);
+    }),
+    // Legacy aliases for users with existing keybindings / menus from the
+    // Claude Cost Tracker era. Registering both lets us drop the legacy
+    // command IDs in v3.0 without breaking installs in the meantime.
     vscode.commands.registerCommand("claudeCostTracker.showDashboard", () => showDashboard(context)),
     vscode.commands.registerCommand("claudeCostTracker.refresh", () => {
       if (panel) postData(context, panel, currentRange);
       else showDashboard(context);
     }),
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration("claudeCostTracker") && panel) {
+      if (
+        panel &&
+        (e.affectsConfiguration("burnRate") || e.affectsConfiguration("claudeCostTracker"))
+      ) {
         postData(context, panel, currentRange);
       }
     }),
   );
+
+  void maybeShowLegacyDeprecation(context);
 }
 
 export function deactivate() {}
@@ -27,8 +43,8 @@ export function deactivate() {}
 function showDashboard(context: vscode.ExtensionContext) {
   if (panel) { panel.reveal(); return; }
   panel = vscode.window.createWebviewPanel(
-    "claudeCostTracker",
-    "Claude Cost Tracker",
+    "burnRate",
+    "BurnRate",
     vscode.ViewColumn.One,
     {
       enableScripts: true,
@@ -43,7 +59,7 @@ function showDashboard(context: vscode.ExtensionContext) {
     } else if (msg?.type === "ready") {
       await postData(context, panel!, currentRange);
     } else if (msg?.type === "openSettings") {
-      vscode.commands.executeCommand("workbench.action.openSettings", "claudeCostTracker");
+      vscode.commands.executeCommand("workbench.action.openSettings", "burnRate");
     }
   });
   panel.webview.html = renderHtml(context, panel.webview);
@@ -53,10 +69,12 @@ function showDashboard(context: vscode.ExtensionContext) {
 async function postData(context: vscode.ExtensionContext, p: vscode.WebviewPanel, range: "today" | "month" | "all") {
   const requestId = nextRequestId();
   try {
-    const cfg = vscode.workspace.getConfiguration("claudeCostTracker");
-    const customPricing: Record<string, ModelPrice> = sanitizePricing(cfg.get("customPricing") ?? {});
-    const rawSpikeThreshold = cfg.get("spikeThresholdUsd");
-    const spikeThreshold: number = typeof rawSpikeThreshold === "number" && isFinite(rawSpikeThreshold) ? rawSpikeThreshold : 1.0;
+    const customPricing: Record<string, ModelPrice> = sanitizePricing(
+      readConfigValue<Record<string, unknown>>("customPricing", {}),
+    );
+    const rawSpikeThreshold = readConfigValue<unknown>("spikeThresholdUsd", 1.0);
+    const spikeThreshold: number =
+      typeof rawSpikeThreshold === "number" && isFinite(rawSpikeThreshold) ? rawSpikeThreshold : 1.0;
     const pricing = new PricingTable(customPricing);
     const since = sinceFor(range);
     const result = await analyze(defaultClaudeRoot(), {
@@ -81,6 +99,57 @@ async function postData(context: vscode.ExtensionContext, p: vscode.WebviewPanel
     });
   } catch (err: any) {
     p.webview.postMessage({ type: "error", requestId, message: err?.message || String(err) });
+  }
+}
+
+/**
+ * Read a config key from the new `burnRate` namespace, falling back to the
+ * legacy `claudeCostTracker` namespace. A value is considered "set" only
+ * when the user has explicitly configured it at any scope (global /
+ * workspace / folder); the schema's default never wins over a real legacy
+ * value.
+ */
+function readConfigValue<T>(key: string, fallback: T): T {
+  const newCfg = vscode.workspace.getConfiguration("burnRate");
+  const newInspect = newCfg.inspect<T>(key);
+  if (newInspect && hasExplicitValue(newInspect)) {
+    return newCfg.get<T>(key, fallback);
+  }
+  const oldCfg = vscode.workspace.getConfiguration("claudeCostTracker");
+  const oldInspect = oldCfg.inspect<T>(key);
+  if (oldInspect && hasExplicitValue(oldInspect)) {
+    return oldCfg.get<T>(key, fallback);
+  }
+  return newCfg.get<T>(key, fallback);
+}
+
+function hasExplicitValue<T>(inspect: { globalValue?: T; workspaceValue?: T; workspaceFolderValue?: T }): boolean {
+  return (
+    inspect.globalValue !== undefined ||
+    inspect.workspaceValue !== undefined ||
+    inspect.workspaceFolderValue !== undefined
+  );
+}
+
+async function maybeShowLegacyDeprecation(context: vscode.ExtensionContext) {
+  if (context.globalState.get<boolean>(LEGACY_DEPRECATION_FLAG)) return;
+  const oldCfg = vscode.workspace.getConfiguration("claudeCostTracker");
+  const legacyKeys = ["customPricing", "spikeThresholdUsd"];
+  const populated = legacyKeys.some((k) => {
+    const i = oldCfg.inspect(k);
+    return !!i && hasExplicitValue(i);
+  });
+  if (!populated) return;
+  const choice = await vscode.window.showInformationMessage(
+    "BurnRate: settings have moved from `claudeCostTracker.*` to `burnRate.*`. Legacy keys are still read but will be removed in v3.0.",
+    "Open Settings",
+    "Don't show again",
+  );
+  if (choice === "Open Settings") {
+    vscode.commands.executeCommand("workbench.action.openSettings", "burnRate");
+  }
+  if (choice === "Don't show again" || choice === "Open Settings") {
+    await context.globalState.update(LEGACY_DEPRECATION_FLAG, true);
   }
 }
 

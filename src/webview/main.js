@@ -130,7 +130,7 @@
 
   function render(result, range, rootExists, pricingMeta) {
     if (!rootExists) {
-      content.innerHTML = `<div class="empty">No Claude Code logs found at <code>~/.claude/projects</code>. Use Claude Code at least once to generate logs.</div>`;
+      content.innerHTML = `<div class="empty">No Claude Code logs found at <code>~/.claude/projects</code>. Use Claude Code (or Codex CLI, once v2 ships its adapter) at least once to generate logs.</div>`;
       return;
     }
     if (result.totals.messages === 0) {
