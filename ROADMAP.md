@@ -3,7 +3,8 @@
 Tracking work beyond v1.0.0. Framed from the perspective of a public VS Code
 Marketplace plugin serving heterogeneous users (heavy users with 24+ months of
 history, sparse users with gaps, new users with 1 day of data, non-English
-users, users of non-Anthropic models routed through Claude Code).
+users, users of non-Anthropic models routed through Claude Code, mixed
+Claude+Codex users on macOS / Linux / Windows).
 
 Priorities:
 - **P0** — fixes a broken or trust-eroding experience for a real user segment.
@@ -12,7 +13,174 @@ Priorities:
 
 ---
 
+## v2.0 — Codex CLI support, rebrand, cross-platform
+
+**Theme.** Become a multi-provider AI CLI cost & quota dashboard. Lock in the
+"BurnRate" brand. Run cleanly on Windows.
+
+### Codex data shape (verified against `~/.codex/sessions/`)
+
+- Path: `~/.codex/sessions/YYYY/MM/DD/rollout-<ts>-<uuid>.jsonl`
+- Per-turn usage: `{type:"event_msg", payload:{type:"token_count",
+  info:{last_token_usage:{input_tokens, cached_input_tokens,
+  output_tokens, reasoning_output_tokens, total_tokens}}}}`
+- **Trap 1:** `total_token_usage` is the running session total — must use
+  `last_token_usage` only when summing.
+- **Trap 2:** No message-id dedup key. Use `(file, timestamp)` tuple as
+  per-file dedup scope.
+- Model is in a separate `turn_context` event, not on the token event —
+  must associate by `turn_id`.
+- `cwd` is in `session_meta` (per session) and `turn_context` (per turn).
+- `rate_limits.primary` carries plan-quota state on every token_count event.
+
+### P0 — Provider abstraction & Codex MVP
+
+#### v2.0-1. Rebrand to BurnRate
+- `package.json` `name: "burnrate"`, `displayName: "BurnRate"`,
+  `description: "Local cost & quota dashboard for Claude Code and Codex CLI"`
+- Commands renamed: `burnRate.showDashboard`, `burnRate.refresh`,
+  `burnRate.ignoreModel` (new)
+- Webview `<h1>BurnRate</h1>`; subtitle "Claude Code · Codex CLI"
+- README rewritten around two providers; new screenshots
+- Settings namespace migration: `claudeCostTracker.*` → `burnRate.*`. Read
+  both for one minor version, log a one-time deprecation toast pointing at
+  settings.json. Drop legacy in v3.0.
+
+#### v2.0-2. ProviderAdapter abstraction
+```ts
+interface ProviderAdapter {
+  id: "claude-code" | "codex";
+  defaultRoot(): string;
+  listSessionFiles(root: string): Promise<FileTask[]>;
+  processFile(file: FileTask, onTurn: (turn: NormalizedTurn) => void): Promise<void>;
+}
+```
+- `claudeCodeAdapter` wraps current logic.
+- `codexAdapter` walks `YYYY/MM/DD/` tree, parses `session_meta` →
+  per-turn `token_count` with `turn_context` model lookup.
+- `analyze()` runs both adapters in parallel through `asyncPool`, tags
+  every `NormalizedTurn` with `provider`.
+- All result shapes (`ProjectStats`, `Spike`, `ModelStat`) gain a
+  `provider` field. `byProject` keys stay `cwd`-based so cross-tool work
+  in the same repo aggregates.
+
+#### v2.0-3. Codex pricing
+- All Codex turns priced via `BUILTIN_PRICING` OpenAI entries (already
+  present from v1). Plan flag is **display metadata only** — never
+  zeroes-out the cost.
+- New `reasoning_output` token category. Pricing schema gains
+  `reasoning_output: number` field, defaulting to the model's `output`
+  rate when not specified (per OpenAI policy).
+- Update `sanitizePricing` and the `customPricing` JSON schema docs.
+
+#### v2.0-4. Provider segmented control + per-provider views
+- Top toolbar gains `[All Tools] [Claude Code] [Codex]` segment.
+  Persisted via `vscode.setState`.
+- **All Tools view:** combined totals card + new "By Tool" card showing
+  spend split, then unified Heatmap / Projects / Models / Spikes with
+  inline provider tags (📘 / 🟢).
+- **Claude Code view:** identical to v1.
+- **Codex view:** replaces "Top Project" card with **Quota card** (see
+  v2.0-5), shows "implied API cost" with a `Plan: <plan>` badge in the
+  cost card.
+- Hover detail card on heatmap: adds "By Tool" sub-section in All Tools
+  view.
+
+#### v2.0-5. Codex quota + projection card
+- Renders latest `rate_limits.primary` from any token_count event in the
+  current week.
+- Progress bar: green <50%, yellow 50–85%, red >85%.
+- Shows `resets_at` formatted as "Resets in 2d 4h" + absolute local
+  timestamp.
+- **Projection:** average `last_token_usage.total_tokens` per active day
+  over the last 7 days, linear-extrapolate to predict when
+  `used_percent` will hit 100%. Print "At current rate you'll hit limit
+  ~Sat Apr 26" only when projection lands inside the current reset
+  window. Hide when sample size < 3 active days (avoid garbage
+  predictions).
+
+#### v2.0-6. Rate Limits section (Codex only)
+- Weekly window summary
+- Last 7 days avg tokens/day
+- Projected exhaust timestamp
+- Recent `usage_limit_exceeded` events (scan
+  `event_msg.type == "error" && codex_error_info == "usage_limit_exceeded"`),
+  show count + most recent timestamp.
+
+#### v2.0-7. Project rows show tool-share bar
+- After the existing cost bar, render a small horizontal stacked bar:
+  `📘 80% / 🟢 20%`. Computed from per-provider cost share within that
+  project.
+
+#### v2.0-8. Cross-platform fixes
+- **`shortPath`**: split on both `/` and `\\`. Detect Windows paths
+  (`/^[A-Za-z]:[\\\/]/`) and preserve drive letter when truncating.
+- **`decodeProjectDir`**: only used as fallback when `cwd` is missing;
+  on Windows, attempt no decoding (return raw dir name) and lean on
+  `cwd` field. Document this limitation in README.
+- **`.gitignore`**: add `.DS_Store`, `Thumbs.db`, `out/`. `git rm
+  --cached` the existing `.DS_Store`.
+- **`.vscodeignore`** (new): exclude `src/`, tests, `out/*.map`,
+  `.git/`, `node_modules/`, `ROADMAP.md`, `.DS_Store`, etc. from
+  packaged `.vsix`.
+- **CI smoke test on Windows**: GitHub Actions matrix
+  `os: [ubuntu, macos, windows]` running `npm run compile` + a small
+  unit test that exercises `processFile` against fixture JSONL.
+  Catches path / line-ending / encoding regressions early.
+- **Path comparisons**: any cwd-vs-cwd equality check (none today, but
+  in the new tool-share aggregation) must be case-insensitive on
+  Windows. Use a `samePath()` helper with `process.platform === "win32"`
+  branch.
+- **Local timezone day key on Windows**: `new Date().getHours()` works
+  identically; no change. Verify with CI fixture.
+
+### P1 — UX upgrades that come along for the ride
+
+#### v2.0-9. Sparse-month placeholders + year separators
+(Originally v1.1 #1 + #2.) With multi-provider data, sparse months are
+even more likely. Roll into v2.0.
+
+#### v2.0-10. Smarter empty-state messaging
+(Originally v1.1 #3.) Adapt for multi-provider:
+- Both roots missing → "No Claude Code or Codex logs found. Use either
+  CLI then refresh."
+- Only one root present → mention which provider is active.
+- Provider tab selected but that provider has no data → "Codex has no
+  data — switch to Claude Code or All Tools."
+
+#### v2.0-11. Dismissible unknown-pricing banner
+(Originally v1.1 #4.) Now also accounts for unknown OpenAI variants
+that route through Codex.
+
+### P2 — Defer to v2.1+
+
+- Default-collapse to recent 12 months (v1.1 #5)
+- Auto-scroll selected mini-month (v1.1 #6)
+- Sensible default range for new users (v1.1 #7)
+- Year-heatmap view (v1.1 #8)
+- CSV / JSON export (v1.1 #9)
+- Session drill-down for spikes (v1.1 #10)
+
+### v2.0 deliverable cut-list (in order)
+
+1. Cross-platform fixes + .vscodeignore + Windows CI (foundation)
+2. Rebrand to BurnRate + settings namespace migration
+3. ProviderAdapter abstraction (refactor existing Claude logic)
+4. Codex adapter + reasoning_output pricing
+5. Provider segmented control + 3 views
+6. Quota card + projection
+7. Rate Limits section + limit-hit scan
+8. Tool-share bar in Projects
+9. Sparse months + year separators + empty-state polish
+10. Dismissible unknown-pricing banner
+11. Update README, screenshots, CHANGELOG; tag v2.0.0
+
+---
+
 ## v1.1 — Long-history & first-impression polish
+
+> **Status:** items folded into v2.0 where applicable; remaining items
+> deferred to v2.1+. This section preserved for reference.
 
 ### P0 — Trust-breaking gaps
 
