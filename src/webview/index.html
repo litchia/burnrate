@@ -50,6 +50,13 @@
         gap: 8px;
         margin-bottom: 24px;
         align-items: center;
+        flex-wrap: wrap;
+      }
+      .toolbar-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
       }
       .pill {
         background: var(--vscode-button-secondaryBackground);
@@ -80,7 +87,7 @@
 
       .cards {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 16px;
         margin-bottom: 24px;
       }
@@ -105,6 +112,101 @@
         color: var(--muted);
         font-size: 11px;
         margin-top: 6px;
+      }
+      .inline-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--vscode-panel-border);
+        font-size: 10px;
+        line-height: 1.4;
+        margin-left: 6px;
+        color: var(--muted);
+      }
+      .quota-progress {
+        margin-top: 10px;
+        width: 100%;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--vscode-input-background);
+        overflow: hidden;
+      }
+      .quota-progress-bar {
+        height: 100%;
+        border-radius: 999px;
+      }
+      .quota-progress-bar.quota-good {
+        background: var(--heat-accent);
+      }
+      .quota-progress-bar.quota-warn {
+        background: #d7ba7d;
+      }
+      .quota-progress-bar.quota-danger {
+        background: var(--danger);
+      }
+      .quota-stats {
+        display: grid;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .quota-stat-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 12px;
+      }
+      .quota-stat-row span:last-child {
+        text-align: right;
+      }
+      .rate-limit-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+      .rate-limit-card {
+        background: var(--vscode-editorWidget-background);
+        border: 1px solid var(--vscode-panel-border);
+        border-radius: 8px;
+        padding: 16px;
+      }
+      .rate-limit-card h3 {
+        margin: 0 0 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .rate-limit-value {
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .rate-limit-meta {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .provider-breakdown {
+        display: grid;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .provider-breakdown-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 12px;
+      }
+      .provider-breakdown-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .provider-breakdown-share {
+        color: var(--muted);
       }
 
       .section {
@@ -251,6 +353,16 @@
         gap: 14px;
         margin-bottom: 16px;
       }
+      .year-group + .year-group {
+        margin-top: 18px;
+      }
+      .year-divider {
+        margin: 0 0 12px;
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+      }
       .mini-month {
         background: var(--vscode-editorWidget-background);
         border: 1px solid var(--vscode-panel-border);
@@ -261,6 +373,13 @@
       .mini-month.active {
         border-color: var(--accent);
         box-shadow: inset 0 0 0 1px var(--accent);
+      }
+      .mini-month.disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+      .mini-month.disabled .mini-month-grid {
+        filter: saturate(0.3);
       }
       .mini-month-title {
         font-size: 11px;
@@ -316,6 +435,11 @@
         display: grid;
         gap: 8px;
       }
+      .detail-tools {
+        margin-top: 10px;
+        display: grid;
+        gap: 8px;
+      }
       .detail-model-row {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
@@ -349,6 +473,30 @@
       .detail-empty {
         color: var(--muted);
         font-size: 12px;
+      }
+      .provider-badges {
+        display: inline-flex;
+        gap: 6px;
+        margin-left: 6px;
+        vertical-align: middle;
+      }
+      .provider-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 1px 6px;
+        border-radius: 999px;
+        border: 1px solid var(--vscode-panel-border);
+        font-size: 10px;
+        line-height: 1.4;
+        color: var(--muted);
+      }
+      .provider-badge.provider-claude-code {
+        border-color: color-mix(in srgb, var(--accent) 40%, var(--vscode-panel-border) 60%);
+        color: var(--accent);
+      }
+      .provider-badge.provider-codex {
+        border-color: color-mix(in srgb, var(--heat-accent) 55%, var(--vscode-panel-border) 45%);
+        color: var(--heat-accent);
       }
       .large-calendar-grid {
         display: grid;
@@ -475,6 +623,54 @@
         height: 100%;
         background: var(--accent);
       }
+      .tool-share-wrap {
+        margin-top: 8px;
+      }
+      .tool-share-bar {
+        display: flex;
+        height: 5px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--vscode-input-background);
+        border: 1px solid color-mix(in srgb, var(--vscode-panel-border) 78%, transparent 22%);
+      }
+      .tool-share-segment {
+        height: 100%;
+      }
+      .tool-share-segment.tool-share-claude {
+        background: var(--accent);
+      }
+      .tool-share-segment.tool-share-codex {
+        background: var(--heat-accent);
+      }
+      .tool-share-meta {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 6px;
+      }
+      .tool-share-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .tool-share-chip::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: currentColor;
+        opacity: 0.9;
+      }
+      .tool-share-chip-claude::before {
+        color: var(--accent);
+      }
+      .tool-share-chip-codex::before {
+        color: var(--heat-accent);
+      }
       .project-cost {
         text-align: right;
         font-weight: 600;
@@ -547,6 +743,76 @@
         font-size: 12px;
         margin-bottom: 16px;
       }
+      /* In zh-cn, `text-transform: uppercase` makes embedded English words
+         (Token, Codex, …) look shouty next to Chinese characters. Disable it
+         on labels / pills / small headings while keeping the rest intact. */
+      body.locale-zh .card .label,
+      body.locale-zh .rate-limit-card h3,
+      body.locale-zh .section h2,
+      body.locale-zh .year-divider,
+      body.locale-zh .detail-label,
+      body.locale-zh .alert-subhead {
+        text-transform: none;
+      }
+      .quota-unavailable-note {
+        font-size: 11px;
+        color: var(--vscode-descriptionForeground, #888);
+        opacity: 0.75;
+        margin: -8px 0 16px;
+        padding: 0 2px;
+        line-height: 1.5;
+      }
+      .warn-banner-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .warn-banner-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .warn-banner-btn {
+        background: transparent;
+        color: var(--vscode-button-foreground, var(--vscode-foreground));
+        border: 1px solid var(--vscode-panel-border);
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 11px;
+        cursor: pointer;
+      }
+      .warn-banner-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .warn-banner-body {
+        margin-top: 12px;
+        display: grid;
+        gap: 10px;
+      }
+      .warn-banner-copy {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .warn-banner-list {
+        display: grid;
+        gap: 8px;
+      }
+      .warn-banner-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .warn-banner-row-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
       .warn-banner code {
         background: rgba(0, 0, 0, 0.2);
         padding: 1px 5px;
@@ -567,16 +833,23 @@
     </style>
   </head>
   <body>
-    <h1>BurnRate</h1>
-    <div class="sub" id="subtitle">Claude Code · Codex CLI</div>
-    <div class="sub" id="generatedAt">Loading…</div>
+    <h1 data-i18n="BurnRate">BurnRate</h1>
+    <div class="sub" id="subtitle" data-i18n="Claude Code · Codex CLI">Claude Code · Codex CLI</div>
+    <div class="sub" id="generatedAt" data-i18n="Loading…">Loading…</div>
 
     <div class="toolbar">
-      <button class="pill" data-range="today">Today</button>
-      <button class="pill active" data-range="month">This Month</button>
-      <button class="pill" data-range="all">All Time</button>
+      <div class="toolbar-group">
+        <button class="pill provider-pill active" data-provider="all" data-i18n="All Tools">All Tools</button>
+        <button class="pill provider-pill" data-provider="claude-code" data-i18n="Claude Code">Claude Code</button>
+        <button class="pill provider-pill" data-provider="codex" data-i18n="Codex">Codex</button>
+      </div>
+      <div class="toolbar-group">
+        <button class="pill range-pill" data-range="today" data-i18n="Today">Today</button>
+        <button class="pill range-pill active" data-range="month" data-i18n="This Month">This Month</button>
+        <button class="pill range-pill" data-range="all" data-i18n="All Time">All Time</button>
+      </div>
       <div class="spacer"></div>
-      <button class="refresh" id="refreshBtn">Refresh</button>
+      <button class="refresh" id="refreshBtn" data-i18n="Refresh">Refresh</button>
     </div>
 
     <div id="content"></div>

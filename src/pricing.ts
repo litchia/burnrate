@@ -1,6 +1,7 @@
 export interface Usage {
   input_tokens?: number;
   output_tokens?: number;
+  reasoning_output_tokens?: number;
   cache_creation_input_tokens?: number;
   cache_read_input_tokens?: number;
   cache_creation?: {
@@ -12,6 +13,7 @@ export interface Usage {
 export interface ModelPrice {
   input: number;
   output: number;
+  reasoning_output?: number;
   cache_write_5m: number;
   cache_write_1h: number;
   cache_read: number;
@@ -90,6 +92,7 @@ export class PricingTable {
     const cost =
       (usage.input_tokens                ?? 0) * p.input       / 1_000_000 +
       (usage.output_tokens               ?? 0) * p.output      / 1_000_000 +
+      (usage.reasoning_output_tokens     ?? 0) * (p.reasoning_output ?? p.output) / 1_000_000 +
       cacheWrite5m                           * p.cache_write_5m / 1_000_000 +
       cacheWrite1h                           * p.cache_write_1h / 1_000_000 +
       cacheWriteFallback                     * p.cache_write_5m / 1_000_000 +
@@ -112,6 +115,7 @@ export function sanitizePricing(raw: unknown): Record<string, ModelPrice> {
     out[model] = {
       input: inp,
       output: outp,
+      reasoning_output: num(v.reasoning_output) ?? outp,
       cache_write_5m: cacheWrite5m,
       cache_write_1h: num(v.cache_write_1h) ?? cacheWrite5m,
       cache_read:  num(v.cache_read)  ?? 0,

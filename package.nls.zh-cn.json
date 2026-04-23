@@ -1,0 +1,13 @@
+{
+  "_comment": "中文 manifest 翻译。键与 package.nls.json 完全一致。",
+
+  "command.showDashboard.title": "BurnRate：打开仪表盘",
+  "command.refresh.title": "BurnRate：刷新数据",
+  "config.language.description": "BurnRate 仪表盘界面语言。\"auto\" 跟随 VS Code 显示语言。此设置面板中的命令名和设置项标签需重启编辑器后生效；仪表盘内的文案会立即更新。",
+  "config.language.enumDescriptions.auto": "跟随 VS Code 显示语言",
+  "config.language.enumDescriptions.en": "English",
+  "config.language.enumDescriptions.zh-cn": "简体中文",
+  "config.customPricing.markdownDescription": "内置 Claude / GPT 定价未覆盖的模型的定价覆盖。每个条目：`\"<模型>\": { \"input\": ..., \"output\": ..., \"cache_write_5m\": ..., \"cache_write_1h\": ..., \"cache_read\": ..., \"reasoning_output\": ... }`，单位为 USD/百万 Token。`cache_write` 仍可作为 `cache_write_5m` 的旧版别名。`reasoning_output` 默认为 `output`。",
+  "config.spikeThresholdUsd.description": "将超过此 USD 消费的助手轮次标记为高消费。",
+  "config.ignoredUnpricedModels.markdownDescription": "从未定价警告横幅中隐藏的模型。这些模型仍按未定价（$0）计入，除非你将其添加到 `burnRate.customPricing`。"
+}

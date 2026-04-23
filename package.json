@@ -2,7 +2,7 @@
   "name": "burnrate",
   "displayName": "BurnRate",
   "description": "Local cost & quota dashboard for Claude Code and Codex CLI - zero config, privacy-first",
-  "version": "1.1.0-dev",
+  "version": "2.0.0",
   "publisher": "litchia",
   "license": "MIT",
   "repository": {
@@ -18,53 +18,73 @@
   },
   "categories": ["Other", "Visualization"],
   "keywords": ["claude", "claude-code", "codex", "openai", "cost", "tracking", "ai", "tokens", "quota"],
-  "activationEvents": [],
   "main": "./out/extension.js",
+  "l10n": "./l10n",
   "contributes": {
     "commands": [
       {
         "command": "burnRate.showDashboard",
-        "title": "BurnRate: Show Dashboard"
+        "title": "%command.showDashboard.title%"
       },
       {
         "command": "burnRate.refresh",
-        "title": "BurnRate: Refresh Data"
-      },
-      {
-        "command": "claudeCostTracker.showDashboard",
-        "title": "BurnRate: Show Dashboard (legacy alias)"
-      },
-      {
-        "command": "claudeCostTracker.refresh",
-        "title": "BurnRate: Refresh Data (legacy alias)"
+        "title": "%command.refresh.title%"
       }
     ],
     "configuration": {
       "title": "BurnRate",
       "properties": {
+        "burnRate.language": {
+          "type": "string",
+          "enum": ["auto", "en", "zh-cn"],
+          "enumDescriptions": [
+            "%config.language.enumDescriptions.auto%",
+            "%config.language.enumDescriptions.en%",
+            "%config.language.enumDescriptions.zh-cn%"
+          ],
+          "default": "auto",
+          "description": "%config.language.description%"
+        },
         "burnRate.customPricing": {
           "type": "object",
           "default": {},
-          "markdownDescription": "Inline pricing overrides for models not covered by the built-in Claude / GPT pricing. Each entry: `\"<model>\": { \"input\": ..., \"output\": ..., \"cache_write_5m\": ..., \"cache_write_1h\": ..., \"cache_read\": ..., \"reasoning_output\": ... }` in USD per 1M tokens. `cache_write` is still accepted as a legacy alias for `cache_write_5m`. `reasoning_output` defaults to `output`."
+          "markdownDescription": "%config.customPricing.markdownDescription%"
         },
         "burnRate.spikeThresholdUsd": {
           "type": "number",
           "default": 1.0,
           "minimum": 0,
-          "description": "Mark assistant turns above this USD cost as spikes."
+          "description": "%config.spikeThresholdUsd.description%"
+        },
+        "burnRate.ignoredUnpricedModels": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "%config.ignoredUnpricedModels.markdownDescription%"
         },
         "claudeCostTracker.customPricing": {
           "type": "object",
           "default": {},
-          "markdownDeprecationMessage": "**Deprecated.** Use `burnRate.customPricing` instead. The legacy key is still read for one minor version.",
+          "markdownDeprecationMessage": "**Deprecated.** Use `burnRate.customPricing` instead. The legacy key is still read until v3.0.",
           "markdownDescription": "**Deprecated** — moved to `burnRate.customPricing`."
         },
         "claudeCostTracker.spikeThresholdUsd": {
           "type": "number",
           "default": 1.0,
           "minimum": 0,
-          "markdownDeprecationMessage": "**Deprecated.** Use `burnRate.spikeThresholdUsd` instead. The legacy key is still read for one minor version.",
+          "markdownDeprecationMessage": "**Deprecated.** Use `burnRate.spikeThresholdUsd` instead. The legacy key is still read until v3.0.",
           "description": "Deprecated — moved to burnRate.spikeThresholdUsd."
+        },
+        "claudeCostTracker.ignoredUnpricedModels": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "markdownDeprecationMessage": "**Deprecated.** Use `burnRate.ignoredUnpricedModels` instead. The legacy key is still read until v3.0.",
+          "markdownDescription": "**Deprecated** — moved to `burnRate.ignoredUnpricedModels`."
         }
       }
     }

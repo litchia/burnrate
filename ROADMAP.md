@@ -38,8 +38,7 @@ Priorities:
 #### v2.0-1. Rebrand to BurnRate
 - `package.json` `name: "burnrate"`, `displayName: "BurnRate"`,
   `description: "Local cost & quota dashboard for Claude Code and Codex CLI"`
-- Commands renamed: `burnRate.showDashboard`, `burnRate.refresh`,
-  `burnRate.ignoreModel` (new)
+- Commands renamed: `burnRate.showDashboard`, `burnRate.refresh`
 - Webview `<h1>BurnRate</h1>`; subtitle "Claude Code · Codex CLI"
 - README rewritten around two providers; new screenshots
 - Settings namespace migration: `claudeCostTracker.*` → `burnRate.*`. Read
@@ -151,6 +150,9 @@ even more likely. Roll into v2.0.
 #### v2.0-11. Dismissible unknown-pricing banner
 (Originally v1.1 #4.) Now also accounts for unknown OpenAI variants
 that route through Codex.
+- Introduces `burnRate.ignoredUnpricedModels` and `burnRate.ignoreModel`
+  together with the banner UI, so the command only exists once the feature
+  can actually use it.
 
 ### P2 — Defer to v2.1+
 

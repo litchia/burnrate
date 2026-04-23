@@ -10,6 +10,7 @@ tsconfig.json
 # Repo metadata
 .git/**
 .github/**
+.claude/**
 .gitignore
 .vscode/**
 .vscode-test/**
@@ -19,6 +20,7 @@ Thumbs.db
 # Project docs not relevant to end users
 ROADMAP.md
 CLAUDE.md
+AGENTS.md
 CLAUDE.local.md
 
 # Stray files from other tools

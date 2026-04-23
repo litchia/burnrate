@@ -1,0 +1,13 @@
+{
+  "_comment": "Default (English) manifest strings. VS Code substitutes %key% placeholders in package.json with the value here, picking package.nls.<vscode.env.language>.json when available.",
+
+  "command.showDashboard.title": "BurnRate: Show Dashboard",
+  "command.refresh.title": "BurnRate: Refresh Data",
+  "config.language.description": "UI language for the BurnRate dashboard. \"auto\" follows your VS Code display language. Command and setting labels in this panel update on editor restart; the dashboard itself updates immediately.",
+  "config.language.enumDescriptions.auto": "Follow VS Code display language",
+  "config.language.enumDescriptions.en": "English",
+  "config.language.enumDescriptions.zh-cn": "简体中文",
+  "config.customPricing.markdownDescription": "Inline pricing overrides for models not covered by the built-in Claude / GPT pricing. Each entry: `\"<model>\": { \"input\": ..., \"output\": ..., \"cache_write_5m\": ..., \"cache_write_1h\": ..., \"cache_read\": ..., \"reasoning_output\": ... }` in USD per 1M tokens. `cache_write` is still accepted as a legacy alias for `cache_write_5m`. `reasoning_output` defaults to `output`.",
+  "config.spikeThresholdUsd.description": "Mark assistant turns above this USD cost as spikes.",
+  "config.ignoredUnpricedModels.markdownDescription": "Models to suppress from the unknown-pricing warning banner. They still count as unpriced ($0) unless you add them to `burnRate.customPricing`."
+}
