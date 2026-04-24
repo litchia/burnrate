@@ -3,7 +3,7 @@
   "displayName": "BurnRate",
   "description": "Local cost & quota dashboard for Claude Code and Codex CLI - zero config, privacy-first",
   "version": "2.0.0",
-  "publisher": "litchia",
+  "publisher": "litchiak",
   "license": "MIT",
   "repository": {
     "type": "git",
