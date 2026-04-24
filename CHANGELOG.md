@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.0.1 — 2026-04-23
+
+### Changed
+
+- Status bar item now shows today's total token volume (`🔥 1.2M`) instead
+  of implied USD spend. Hover tooltip shows per-provider token breakdown
+  with total implied spend as a secondary line.
+
+### Removed
+
+- Activity bar entry and welcome view. BurnRate is now reached via the
+  status bar and the Command Palette only.
+
 ## v2.0.0 — 2026-04-24
 
 ### Added

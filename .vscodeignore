@@ -37,10 +37,6 @@ out/remotePricing.*
 # Icon source — only ship the PNG
 icon.svg
 
-# Media — only ship the activity-bar icon
-media/**
-!media/activity-bar.svg
-
 # Node
 node_modules/**
 package-lock.json

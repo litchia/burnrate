@@ -160,9 +160,9 @@
   "Claude Code does not expose subscription quota in local logs, so BurnRate can only show implied API spend. Codex exposes it, so a Quota card is shown there.": "Claude Code does not expose subscription quota in local logs, so BurnRate can only show implied API spend. Codex exposes it, so a Quota card is shown there.",
 
   "BurnRate · today": "BurnRate · today",
-  "Claude Code: {0}": "Claude Code: {0}",
-  "Codex: {0}": "Codex: {0}",
+  "Claude Code: {0} tokens": "Claude Code: {0} tokens",
+  "Codex: {0} tokens": "Codex: {0} tokens",
+  "Total implied spend: {0}": "Total implied spend: {0}",
   "No activity recorded yet today.": "No activity recorded yet today.",
-  "Click to open dashboard.": "Click to open dashboard.",
-  "Unpriced token volume today: {0}": "Unpriced token volume today: {0}"
+  "Click to open dashboard.": "Click to open dashboard."
 }

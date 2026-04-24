@@ -26,8 +26,8 @@ const MIN_REFRESH_SECONDS = 30;
 interface TodaySnapshot {
   totalCost: number;
   totalTokens: number;
-  claudeCost: number;
-  codexCost: number;
+  claudeTokens: number;
+  codexTokens: number;
   hasData: boolean;
   sampledAt: Date;
 }
@@ -153,24 +153,22 @@ class BurnRateStatusBar {
     if (!snap || !snap.hasData) {
       md.appendMarkdown(i18n.t("No activity recorded yet today.") + "\n\n");
     } else {
-      if (snap.totalCost > 0) {
-        if (snap.claudeCost > 0) {
-          md.appendMarkdown(i18n.t("Claude Code: {0}", formatUsd(snap.claudeCost)) + "  \n");
-        }
-        if (snap.codexCost > 0) {
-          md.appendMarkdown(i18n.t("Codex: {0}", formatUsd(snap.codexCost)) + "  \n");
-        }
-        if (snap.claudeCost === 0 && snap.codexCost === 0) {
-          // Defensive fallback: total > 0 but neither split > 0 (shouldn't
-          // happen). Show total without split.
-          md.appendMarkdown(formatUsd(snap.totalCost) + "  \n");
-        }
-        md.appendMarkdown("\n");
-      } else if (snap.totalTokens > 0) {
+      if (snap.claudeTokens > 0) {
         md.appendMarkdown(
-          i18n.t("Unpriced token volume today: {0}", formatTokens(snap.totalTokens)) + "\n\n",
+          i18n.t("Claude Code: {0} tokens", formatTokens(snap.claudeTokens)) + "  \n",
         );
       }
+      if (snap.codexTokens > 0) {
+        md.appendMarkdown(
+          i18n.t("Codex: {0} tokens", formatTokens(snap.codexTokens)) + "  \n",
+        );
+      }
+      if (snap.totalCost > 0) {
+        md.appendMarkdown(
+          i18n.t("Total implied spend: {0}", formatUsd(snap.totalCost)) + "  \n",
+        );
+      }
+      md.appendMarkdown("\n");
     }
     md.appendMarkdown(i18n.t("Click to open dashboard."));
     return md;
@@ -195,8 +193,8 @@ class BurnRateStatusBar {
       includeHourBuckets: false,
       includeBucketModels: "none",
     });
-    const claudeCost = result.byProvider["claude-code"]?.cost ?? 0;
-    const codexCost = result.byProvider["codex"]?.cost ?? 0;
+    const claudeTokens = result.byProvider["claude-code"]?.tokens ?? 0;
+    const codexTokens = result.byProvider["codex"]?.tokens ?? 0;
     const totalCost = result.totals.cost;
     const totalTokens =
       result.totals.inTokens +
@@ -206,8 +204,8 @@ class BurnRateStatusBar {
     return {
       totalCost,
       totalTokens,
-      claudeCost,
-      codexCost,
+      claudeTokens,
+      codexTokens,
       hasData: result.totals.messages > 0,
       sampledAt: new Date(),
     };
@@ -233,7 +231,6 @@ export function registerStatusBar(context: vscode.ExtensionContext): {
 
 function formatStatusText(snap: TodaySnapshot | undefined): string {
   if (!snap || !snap.hasData) return "$(flame) BurnRate";
-  if (snap.totalCost > 0) return `$(flame) ${formatUsd(snap.totalCost)}`;
   if (snap.totalTokens > 0) return `$(flame) ${formatTokens(snap.totalTokens)}`;
   return "$(flame) BurnRate";
 }
