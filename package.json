@@ -21,6 +21,9 @@
   "keywords": ["claude", "claude-code", "codex", "codex-cli", "openai", "anthropic", "cost", "tracking", "ai", "tokens", "quota", "burn-rate", "forecasting", "dashboard", "glm", "qwen", "kimi", "deepseek"],
   "main": "./out/extension.js",
   "l10n": "./l10n",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "contributes": {
     "commands": [
       {
@@ -30,6 +33,29 @@
       {
         "command": "burnRate.refresh",
         "title": "%command.refresh.title%"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "burnRate",
+          "title": "%view.container.title%",
+          "icon": "media/activity-bar.svg"
+        }
+      ]
+    },
+    "views": {
+      "burnRate": [
+        {
+          "id": "burnRate.welcomeView",
+          "name": "%view.welcome.title%"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "burnRate.welcomeView",
+        "contents": "%view.welcome.content%"
       }
     ],
     "configuration": {
@@ -64,6 +90,17 @@
             "type": "string"
           },
           "markdownDescription": "%config.ignoredUnpricedModels.markdownDescription%"
+        },
+        "burnRate.showStatusBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "%config.showStatusBar.description%"
+        },
+        "burnRate.statusBarRefreshSeconds": {
+          "type": "number",
+          "default": 300,
+          "minimum": 30,
+          "description": "%config.statusBarRefreshSeconds.description%"
         },
         "claudeCostTracker.customPricing": {
           "type": "object",

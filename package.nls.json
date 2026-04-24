@@ -9,5 +9,10 @@
   "config.language.enumDescriptions.zh-cn": "简体中文",
   "config.customPricing.markdownDescription": "Inline pricing overrides for models not covered by the built-in Claude / GPT pricing. Each entry: `\"<model>\": { \"input\": ..., \"output\": ..., \"cache_write_5m\": ..., \"cache_write_1h\": ..., \"cache_read\": ..., \"reasoning_output\": ... }` in USD per 1M tokens. `cache_write` is still accepted as a legacy alias for `cache_write_5m`. `reasoning_output` defaults to `output`.",
   "config.spikeThresholdUsd.description": "Mark assistant turns above this USD cost as spikes.",
-  "config.ignoredUnpricedModels.markdownDescription": "Models to suppress from the unknown-pricing warning banner. They still count as unpriced ($0) unless you add them to `burnRate.customPricing`."
+  "config.ignoredUnpricedModels.markdownDescription": "Models to suppress from the unknown-pricing warning banner. They still count as unpriced ($0) unless you add them to `burnRate.customPricing`.",
+  "config.showStatusBar.description": "Show today's implied spend in the status bar.",
+  "config.statusBarRefreshSeconds.description": "How often the status bar refreshes today's usage, in seconds.",
+  "view.container.title": "BurnRate",
+  "view.welcome.title": "BurnRate",
+  "view.welcome.content": "Local cost & quota dashboard for Claude Code and Codex CLI.\n[Open Dashboard](command:burnRate.showDashboard)"
 }

@@ -4,6 +4,7 @@ import * as path from "path";
 import { analyzeForProvider, ProviderFilter, defaultClaudeRoot, defaultCodexRoot } from "./analyzer";
 import { PricingTable, sanitizePricing, ModelPrice, BUILTIN_PRICING } from "./pricing";
 import * as i18n from "./i18n";
+import { registerStatusBar } from "./statusBar";
 
 let panel: vscode.WebviewPanel | undefined;
 let currentRange: "today" | "month" | "all" = "month";
@@ -12,9 +13,12 @@ let currentProvider: ProviderFilter = "all";
 const LEGACY_DEPRECATION_FLAG = "burnRate.legacyDeprecationShown.v1";
 
 export function activate(context: vscode.ExtensionContext) {
+  const statusBar = registerStatusBar(context);
+
   context.subscriptions.push(
     i18n.init(context),
     i18n.onDidChangeLocale(() => {
+      statusBar.handleLocaleChange();
       if (!panel) return;
       // Push the new dict so the webview can re-render in place; then resend
       // the analysis so any server-formatted strings (none right now, but
@@ -25,6 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Primary commands.
     vscode.commands.registerCommand("burnRate.showDashboard", () => showDashboard(context)),
     vscode.commands.registerCommand("burnRate.refresh", () => {
+      void statusBar.refresh();
       if (panel) postData(context, panel, currentRange, currentProvider);
       else showDashboard(context);
     }),
@@ -33,6 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
     // command IDs in v3.0 without breaking installs in the meantime.
     vscode.commands.registerCommand("claudeCostTracker.showDashboard", () => showDashboard(context)),
     vscode.commands.registerCommand("claudeCostTracker.refresh", () => {
+      void statusBar.refresh();
       if (panel) postData(context, panel, currentRange, currentProvider);
       else showDashboard(context);
     }),
@@ -40,6 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
       await ignoreUnpricedModel(String(model || ""));
     }),
     vscode.workspace.onDidChangeConfiguration((e) => {
+      statusBar.handleConfigChange(e);
       if (
         panel &&
         (e.affectsConfiguration("burnRate") || e.affectsConfiguration("claudeCostTracker"))

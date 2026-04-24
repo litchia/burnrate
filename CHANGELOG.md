@@ -19,6 +19,13 @@
   `l10n/bundle.l10n.*.json`. Locale changes apply live without restart
 - Inline note explaining that Claude Code does not expose subscription
   quota in local logs, so only Codex shows a Quota card
+- Activity bar entry with a welcome view and one-click "Open Dashboard"
+  button (monochrome theme-aware icon)
+- Status bar item showing today's implied spend with a Claude / Codex
+  tooltip split; click to open the dashboard
+- `burnRate.showStatusBar` setting to toggle the status bar item
+- `burnRate.statusBarRefreshSeconds` setting (default 300, minimum 30)
+  to tune the status bar refresh cadence
 
 ### Changed
 

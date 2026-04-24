@@ -139,5 +139,11 @@
   "BurnRate: Refresh Data": "BurnRate：刷新数据",
   "Project cost share by tool": "按工具划分的项目消费占比",
   "Show {0}": "显示 {0}",
-  "Claude Code does not expose subscription quota in local logs, so BurnRate can only show implied API spend. Codex exposes it, so a Quota card is shown there.": "Claude Code 不在本地日志中暴露订阅余量，因此 BurnRate 只能显示等效 API 消费。Codex 暴露了这一信息，所以那边有 Quota 卡片。"
+  "Claude Code does not expose subscription quota in local logs, so BurnRate can only show implied API spend. Codex exposes it, so a Quota card is shown there.": "Claude Code 不在本地日志中暴露订阅余量，因此 BurnRate 只能显示等效 API 消费。Codex 暴露了这一信息，所以那边有 Quota 卡片。",
+  "BurnRate · today": "BurnRate · 今天",
+  "Claude Code: {0}": "Claude Code：{0}",
+  "Codex: {0}": "Codex：{0}",
+  "No activity recorded yet today.": "今日暂无使用记录。",
+  "Click to open dashboard.": "点击打开仪表盘。",
+  "Unpriced token volume today: {0}": "今日未定价 Token 量：{0}"
 }

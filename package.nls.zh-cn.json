@@ -9,5 +9,10 @@
   "config.language.enumDescriptions.zh-cn": "简体中文",
   "config.customPricing.markdownDescription": "内置 Claude / GPT 定价未覆盖的模型的定价覆盖。每个条目：`\"<模型>\": { \"input\": ..., \"output\": ..., \"cache_write_5m\": ..., \"cache_write_1h\": ..., \"cache_read\": ..., \"reasoning_output\": ... }`，单位为 USD/百万 Token。`cache_write` 仍可作为 `cache_write_5m` 的旧版别名。`reasoning_output` 默认为 `output`。",
   "config.spikeThresholdUsd.description": "将超过此 USD 消费的助手轮次标记为高消费。",
-  "config.ignoredUnpricedModels.markdownDescription": "从未定价警告横幅中隐藏的模型。这些模型仍按未定价（$0）计入，除非你将其添加到 `burnRate.customPricing`。"
+  "config.ignoredUnpricedModels.markdownDescription": "从未定价警告横幅中隐藏的模型。这些模型仍按未定价（$0）计入，除非你将其添加到 `burnRate.customPricing`。",
+  "config.showStatusBar.description": "在状态栏显示今日等效消费。",
+  "config.statusBarRefreshSeconds.description": "状态栏刷新今日用量的频率（秒）。",
+  "view.container.title": "BurnRate",
+  "view.welcome.title": "BurnRate",
+  "view.welcome.content": "Claude Code 和 Codex CLI 的本地消费与配额仪表盘。\n[打开仪表盘](command:burnRate.showDashboard)"
 }

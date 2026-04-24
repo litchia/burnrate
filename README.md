@@ -86,6 +86,25 @@ Press `F5` to launch the Extension Development Host.
 
 ---
 
+## Entry Points
+
+BurnRate gives you three ways to reach the dashboard without hunting through
+menus:
+
+- **Activity Bar.** A flame + bars icon in the left activity bar opens a
+  welcome view with a single "Open Dashboard" button. Useful if you want
+  BurnRate a click away at all times.
+- **Status Bar.** A compact `🔥 $12.34` item in the bottom-right shows today's
+  implied spend at a glance. Hover for a Claude / Codex split, click to open
+  the dashboard. When you have no priced spend yet but have routed-model
+  volume, it falls back to a token count (`🔥 1.2M`). Hide it entirely with
+  `burnRate.showStatusBar: false`. Adjust refresh cadence with
+  `burnRate.statusBarRefreshSeconds` (default 300, minimum 30).
+- **Command Palette.** `BurnRate: Show Dashboard` and `BurnRate: Refresh
+  Data` remain the canonical entry points.
+
+---
+
 ## Dashboard Features
 
 **Spend & usage**
