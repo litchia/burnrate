@@ -17,7 +17,7 @@
     "vscode": "^1.80.0"
   },
   "categories": ["Other", "Visualization"],
-  "keywords": ["claude", "claude-code", "codex", "openai", "cost", "tracking", "ai", "tokens", "quota"],
+  "keywords": ["claude", "claude-code", "codex", "codex-cli", "openai", "anthropic", "cost", "tracking", "ai", "tokens", "quota", "burn-rate", "forecasting", "dashboard", "glm", "qwen", "kimi", "deepseek"],
   "main": "./out/extension.js",
   "l10n": "./l10n",
   "contributes": {

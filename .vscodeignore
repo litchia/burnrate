@@ -27,6 +27,13 @@ CLAUDE.local.md
 folder-alias.json
 private-folder-alias.json
 
+# Draft / WIP / contributor-only docs
+*.draft.md
+I18N_CONVENTIONS.md
+
+# Safety: orphaned compiled outputs from deleted sources
+out/remotePricing.*
+
 # Node
 node_modules/**
 package-lock.json
