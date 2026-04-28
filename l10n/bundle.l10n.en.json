@@ -7,10 +7,6 @@
   "{0} session": "{0} session",
   "{0} sessions": "{0} sessions",
 
-  "BurnRate: settings have moved from `claudeCostTracker.*` to `burnRate.*`. Legacy keys are still read but will be removed in v3.0.": "BurnRate: settings have moved from `claudeCostTracker.*` to `burnRate.*`. Legacy keys are still read but will be removed in v3.0.",
-  "Open Settings": "Open Settings",
-  "Don't show again": "Don't show again",
-
   "All Tools": "All Tools",
   "Claude Code": "Claude Code",
   "Codex": "Codex",

@@ -2,7 +2,7 @@
   "name": "burnrate",
   "displayName": "BurnRate",
   "description": "Local cost & quota dashboard for Claude Code and Codex CLI - zero config, privacy-first",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "publisher": "litchiak",
   "license": "MIT",
   "repository": {
@@ -78,28 +78,6 @@
           "default": 300,
           "minimum": 30,
           "description": "%config.statusBarRefreshSeconds.description%"
-        },
-        "claudeCostTracker.customPricing": {
-          "type": "object",
-          "default": {},
-          "markdownDeprecationMessage": "**Deprecated.** Use `burnRate.customPricing` instead. The legacy key is still read until v3.0.",
-          "markdownDescription": "**Deprecated** — moved to `burnRate.customPricing`."
-        },
-        "claudeCostTracker.spikeThresholdUsd": {
-          "type": "number",
-          "default": 1.0,
-          "minimum": 0,
-          "markdownDeprecationMessage": "**Deprecated.** Use `burnRate.spikeThresholdUsd` instead. The legacy key is still read until v3.0.",
-          "description": "Deprecated — moved to burnRate.spikeThresholdUsd."
-        },
-        "claudeCostTracker.ignoredUnpricedModels": {
-          "type": "array",
-          "default": [],
-          "items": {
-            "type": "string"
-          },
-          "markdownDeprecationMessage": "**Deprecated.** Use `burnRate.ignoredUnpricedModels` instead. The legacy key is still read until v3.0.",
-          "markdownDescription": "**Deprecated** — moved to `burnRate.ignoredUnpricedModels`."
         }
       }
     }

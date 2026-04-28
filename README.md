@@ -75,15 +75,6 @@ one `burnRate.customPricing` entry away.
 Install from the VS Code Marketplace, then run **`BurnRate: Show Dashboard`**
 from the Command Palette.
 
-Building from source:
-
-```bash
-npm install
-npm run compile
-```
-
-Press `F5` to launch the Extension Development Host.
-
 ---
 
 ## Entry Points
@@ -193,18 +184,6 @@ unpriced (`$0`) unless you also add pricing for them.
 
 `auto` (default) follows VS Code's display language. Force English with
 `en` or 简体中文 with `zh-cn`. Changes apply live — no restart.
-
----
-
-## Settings Migration
-
-Legacy `claudeCostTracker.*` settings are still read for one migration window:
-
-- `claudeCostTracker.customPricing`
-- `claudeCostTracker.spikeThresholdUsd`
-- `claudeCostTracker.ignoredUnpricedModels`
-
-Move them to `burnRate.*` before v3.0.
 
 ---
 

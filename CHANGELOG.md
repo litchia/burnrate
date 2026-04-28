@@ -1,17 +1,20 @@
 # Changelog
 
-## v2.0.1 — 2026-04-23
+## v2.0.2 — 2026-04-28
 
 ### Changed
 
 - Status bar item now shows today's total token volume (`🔥 1.2M`) instead
   of implied USD spend. Hover tooltip shows per-provider token breakdown
   with total implied spend as a secondary line.
+- Refreshed Marketplace icon.
 
 ### Removed
 
 - Activity bar entry and welcome view. BurnRate is now reached via the
   status bar and the Command Palette only.
+- Legacy `claudeCostTracker.*` settings, command aliases, and the
+  one-time deprecation toast. The plugin reads only `burnRate.*` now.
 
 ## v2.0.0 — 2026-04-24
 

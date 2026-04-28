@@ -73,9 +73,7 @@ class BurnRateStatusBar {
   /** Called on any burnRate.* config change — may flip visibility or refresh interval. */
   handleConfigChange(e: vscode.ConfigurationChangeEvent): void {
     if (this.disposed) return;
-    const touchesUs =
-      e.affectsConfiguration("burnRate") || e.affectsConfiguration("claudeCostTracker");
-    if (!touchesUs) return;
+    if (!e.affectsConfiguration("burnRate")) return;
     // Visibility toggle or interval change.
     this.applyVisibility();
     // Pricing / threshold changes affect today's cost.
@@ -259,37 +257,12 @@ function localDateLabel(d: Date): string {
 }
 
 // --- config helpers -------------------------------------------------------
-// Mirror the `readConfigValue` fallback semantics from extension.ts so the
-// status bar respects legacy `claudeCostTracker.*` keys during the v2.x
-// migration window. Kept local to avoid a cross-module cycle.
 
 function readConfigValue<T>(key: string, fallback: T): T {
-  const newCfg = vscode.workspace.getConfiguration("burnRate");
-  const newInspect = newCfg.inspect<T>(key);
-  if (newInspect && hasExplicitValue(newInspect)) {
-    return newCfg.get<T>(key, fallback);
-  }
-  const oldCfg = vscode.workspace.getConfiguration("claudeCostTracker");
-  const oldInspect = oldCfg.inspect<T>(key);
-  if (oldInspect && hasExplicitValue(oldInspect)) {
-    return oldCfg.get<T>(key, fallback);
-  }
-  return newCfg.get<T>(key, fallback);
+  return vscode.workspace.getConfiguration("burnRate").get<T>(key, fallback);
 }
 
 function readConfigBool(key: string, fallback: boolean): boolean {
   const v = readConfigValue<unknown>(key, fallback);
   return typeof v === "boolean" ? v : fallback;
-}
-
-function hasExplicitValue<T>(inspect: {
-  globalValue?: T;
-  workspaceValue?: T;
-  workspaceFolderValue?: T;
-}): boolean {
-  return (
-    inspect.globalValue !== undefined ||
-    inspect.workspaceValue !== undefined ||
-    inspect.workspaceFolderValue !== undefined
-  );
 }

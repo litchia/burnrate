@@ -10,8 +10,6 @@ let panel: vscode.WebviewPanel | undefined;
 let currentRange: "today" | "month" | "all" = "month";
 let currentProvider: ProviderFilter = "all";
 
-const LEGACY_DEPRECATION_FLAG = "burnRate.legacyDeprecationShown.v1";
-
 export function activate(context: vscode.ExtensionContext) {
   const statusBar = registerStatusBar(context);
 
@@ -26,18 +24,8 @@ export function activate(context: vscode.ExtensionContext) {
       panel.webview.postMessage({ type: "i18n", bundle: i18n.getBundleForWebview(), locale: i18n.getActiveLocale() });
       void postData(context, panel, currentRange, currentProvider);
     }),
-    // Primary commands.
     vscode.commands.registerCommand("burnRate.showDashboard", () => showDashboard(context)),
     vscode.commands.registerCommand("burnRate.refresh", () => {
-      void statusBar.refresh();
-      if (panel) postData(context, panel, currentRange, currentProvider);
-      else showDashboard(context);
-    }),
-    // Legacy aliases for users with existing keybindings / menus from the
-    // Claude Cost Tracker era. Registering both lets us drop the legacy
-    // command IDs in v3.0 without breaking installs in the meantime.
-    vscode.commands.registerCommand("claudeCostTracker.showDashboard", () => showDashboard(context)),
-    vscode.commands.registerCommand("claudeCostTracker.refresh", () => {
       void statusBar.refresh();
       if (panel) postData(context, panel, currentRange, currentProvider);
       else showDashboard(context);
@@ -47,16 +35,11 @@ export function activate(context: vscode.ExtensionContext) {
     }),
     vscode.workspace.onDidChangeConfiguration((e) => {
       statusBar.handleConfigChange(e);
-      if (
-        panel &&
-        (e.affectsConfiguration("burnRate") || e.affectsConfiguration("claudeCostTracker"))
-      ) {
+      if (panel && e.affectsConfiguration("burnRate")) {
         postData(context, panel, currentRange, currentProvider);
       }
     }),
   );
-
-  void maybeShowLegacyDeprecation(context);
 }
 
 export function deactivate() {}
@@ -150,60 +133,8 @@ function normalizeProvider(value: unknown): ProviderFilter {
   return value === "claude-code" || value === "codex" ? value : "all";
 }
 
-/**
- * Read a config key from the new `burnRate` namespace, falling back to the
- * legacy `claudeCostTracker` namespace. A value is considered "set" only
- * when the user has explicitly configured it at any scope (global /
- * workspace / folder); the schema's default never wins over a real legacy
- * value.
- */
 function readConfigValue<T>(key: string, fallback: T): T {
-  const newCfg = vscode.workspace.getConfiguration("burnRate");
-  const newInspect = newCfg.inspect<T>(key);
-  if (newInspect && hasExplicitValue(newInspect)) {
-    return newCfg.get<T>(key, fallback);
-  }
-  const oldCfg = vscode.workspace.getConfiguration("claudeCostTracker");
-  const oldInspect = oldCfg.inspect<T>(key);
-  if (oldInspect && hasExplicitValue(oldInspect)) {
-    return oldCfg.get<T>(key, fallback);
-  }
-  return newCfg.get<T>(key, fallback);
-}
-
-function hasExplicitValue<T>(inspect: { globalValue?: T; workspaceValue?: T; workspaceFolderValue?: T }): boolean {
-  return (
-    inspect.globalValue !== undefined ||
-    inspect.workspaceValue !== undefined ||
-    inspect.workspaceFolderValue !== undefined
-  );
-}
-
-async function maybeShowLegacyDeprecation(context: vscode.ExtensionContext) {
-  if (context.globalState.get<boolean>(LEGACY_DEPRECATION_FLAG)) return;
-  const oldCfg = vscode.workspace.getConfiguration("claudeCostTracker");
-  const legacyKeys = ["customPricing", "spikeThresholdUsd", "ignoredUnpricedModels"];
-  const populated = legacyKeys.some((k) => {
-    const i = oldCfg.inspect(k);
-    return !!i && hasExplicitValue(i);
-  });
-  if (!populated) return;
-  // i18n example: pass the English source string as the key. The translation
-  // bundle uses the same key. If a key is missing from a locale bundle, the
-  // English source is rendered as-is — safe degradation by design.
-  const openLabel = i18n.t("Open Settings");
-  const dismissLabel = i18n.t("Don't show again");
-  const choice = await vscode.window.showInformationMessage(
-    i18n.t("BurnRate: settings have moved from `claudeCostTracker.*` to `burnRate.*`. Legacy keys are still read but will be removed in v3.0."),
-    openLabel,
-    dismissLabel,
-  );
-  if (choice === openLabel) {
-    vscode.commands.executeCommand("workbench.action.openSettings", "burnRate");
-  }
-  if (choice === dismissLabel || choice === openLabel) {
-    await context.globalState.update(LEGACY_DEPRECATION_FLAG, true);
-  }
+  return vscode.workspace.getConfiguration("burnRate").get<T>(key, fallback);
 }
 
 let requestSeq = 0;
@@ -265,20 +196,9 @@ function normalizeStringArray(value: unknown): string[] {
 function resolvePreferredConfigDestinations(
   key: string,
 ): Array<{ target: vscode.ConfigurationTarget; resource?: vscode.Uri; current: string[] }> {
-  return (
-    findExplicitDestinations("burnRate", key) ??
-    findExplicitDestinations("claudeCostTracker", key) ??
-    [{ target: vscode.ConfigurationTarget.Global, current: normalizeStringArray(readConfigValue<unknown>(key, [])) }]
-  );
-}
-
-function findExplicitDestinations(
-  section: "burnRate" | "claudeCostTracker",
-  key: string,
-): Array<{ target: vscode.ConfigurationTarget; resource?: vscode.Uri; current: string[] }> | null {
   const folderDestinations: Array<{ target: vscode.ConfigurationTarget; resource?: vscode.Uri; current: string[] }> = [];
   for (const folder of vscode.workspace.workspaceFolders ?? []) {
-    const cfg = vscode.workspace.getConfiguration(section, folder.uri);
+    const cfg = vscode.workspace.getConfiguration("burnRate", folder.uri);
     const inspect = cfg.inspect(key);
     if (inspect?.workspaceFolderValue !== undefined) {
       folderDestinations.push({
@@ -289,16 +209,12 @@ function findExplicitDestinations(
     }
   }
   if (folderDestinations.length > 0) return folderDestinations;
-  const cfg = vscode.workspace.getConfiguration(section);
+  const cfg = vscode.workspace.getConfiguration("burnRate");
   const inspect = cfg.inspect(key);
-  if (!inspect) return null;
-  if (inspect.workspaceValue !== undefined) {
+  if (inspect?.workspaceValue !== undefined) {
     return [{ target: vscode.ConfigurationTarget.Workspace, current: normalizeStringArray(cfg.get<unknown>(key, [])) }];
   }
-  if (inspect.globalValue !== undefined) {
-    return [{ target: vscode.ConfigurationTarget.Global, current: normalizeStringArray(cfg.get<unknown>(key, [])) }];
-  }
-  return null;
+  return [{ target: vscode.ConfigurationTarget.Global, current: normalizeStringArray(cfg.get<unknown>(key, [])) }];
 }
 
 function makeNonce(): string {
