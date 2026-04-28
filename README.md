@@ -12,20 +12,23 @@ All local. No API keys. No telemetry. No outbound network.
 
 ## Why BurnRate
 
-Most usage trackers answer *"what did I spend yesterday?"* BurnRate answers
+Most usage trackers answer _"what did I spend yesterday?"_ BurnRate answers
 three questions the others don't:
 
 ### 1. When will I run out?
+
 Codex has a weekly quota. BurnRate projects exhaustion from your local
 7-day pace and flags when you're trending over the limit — before OpenAI's
 throttle hits mid-PR.
 
 ### 2. Which turn blew up my budget?
+
 Spike detection surfaces the top cost turns in the range. For priced
 models, the threshold is USD. For **unpriced or routed models**, it falls
 back to token volume — so you still see the spike even when cost is `$0`.
 
 ### 3. What's actually happening when I route through GLM / Qwen / Kimi?
+
 If you use Claude Code with a third-party proxy (common in 中国 users' setups),
 ccusage and most dashboards report `$0` forever. BurnRate shows the token
 volume, lets you add pricing with two lines of config, and makes the
@@ -41,16 +44,16 @@ usage tracking as a supporting feature. BurnRate is a **dedicated cost &
 quota dashboard** — we don't browse sessions, they don't forecast quota.
 Install both if you want both.
 
-| | BurnRate | History Viewers |
-|---|:---:|:---:|
-| Unified Claude + Codex dashboard | ✅ | ✅ |
-| Session browser / diff / resume | ❌ | ✅ |
-| Codex quota exhaustion forecasting | **✅** | ❌ |
-| Priced + unpriced spike detection | **✅** | ❌ |
-| Routed-model support (GLM / Qwen / Kimi / DeepSeek) | **✅** | ❌ |
-| Custom pricing override | **✅** | ❌ |
-| Hourly + calendar heatmap | **✅** | partial |
-| 简体中文 UI | **✅** | ❌ |
+|                                                     | BurnRate | History Viewers |
+| --------------------------------------------------- | :------: | :-------------: |
+| Unified Claude + Codex dashboard                    |    ✅    |       ✅        |
+| Session browser / diff / resume                     |    ❌    |       ✅        |
+| Codex quota exhaustion forecasting                  |  **✅**  |       ❌        |
+| Priced + unpriced spike detection                   |  **✅**  |       ❌        |
+| Routed-model support (GLM / Qwen / Kimi / DeepSeek) |  **✅**  |       ❌        |
+| Custom pricing override                             |  **✅**  |       ❌        |
+| Hourly + calendar heatmap                           |  **✅**  |     partial     |
+| 简体中文 UI                                         |  **✅**  |       ❌        |
 
 ---
 
@@ -72,8 +75,28 @@ one `burnRate.customPricing` entry away.
 
 ## Quick Start
 
-Install from the VS Code Marketplace, then run **`BurnRate: Show Dashboard`**
-from the Command Palette.
+Install from the VS Code Marketplace (or Open VSX), then run
+**`BurnRate: Show Dashboard`** from the Command Palette.
+
+---
+
+## Compatible Editors
+
+BurnRate is a stock VS Code extension with no editor-specific APIs, so it
+runs unchanged on every VS Code-based editor:
+
+| Editor               | Install from                                                                                                                     |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **VS Code**          | [Marketplace](https://marketplace.visualstudio.com/items?itemName=litchiak.burnrate)                                             |
+| **Cursor**           | Open VSX (built-in Extensions tab) — search "BurnRate"                                                                           |
+| **Windsurf**         | Open VSX (built-in Extensions tab) — search "BurnRate"                                                                           |
+| **Trae**             | Open VSX (built-in Extensions tab) — search "BurnRate"                                                                           |
+| **Antigravity**      | Open VSX (built-in Extensions tab) — search "BurnRate"                                                                           |
+| **Any VS Code fork** | Sideload the `.vsix` from [GitHub Releases](https://github.com/litchia/burnrate/releases) — `Extensions → … → Install from VSIX` |
+
+Same dashboard, same data sources — BurnRate reads the same local
+`~/.claude` and `~/.codex` log directories regardless of which editor you
+launch it from.
 
 ---
 
@@ -85,30 +108,34 @@ from the Command Palette.
   with `burnRate.showStatusBar: false`. Adjust refresh cadence with
   `burnRate.statusBarRefreshSeconds` (default 300, minimum 30).
 - **Command Palette.** `BurnRate: Show Dashboard` and `BurnRate: Refresh
-  Data` are the canonical entry points.
+Data` are the canonical entry points.
 
 ---
 
 ## Dashboard Features
 
 **Spend & usage**
+
 - Provider switcher: `All Tools` / `Claude Code` / `Codex`
 - Total spend, implied API spend, tokens, cache-reuse ratio
 - Project rows with spend bars and per-tool share in `All Tools`
 - Model breakdown with priced / unpriced labeling
 
 **Heatmaps**
+
 - Calendar heatmap for month and all-time
 - Hourly heatmap for today
 - Theme-aware colors (works in dark + light)
 
 **Forecasting & alerts**
+
 - **Codex weekly quota card** with exhaustion projection from 7-day local pace
 - **Spike turn list** (priced threshold + unpriced token-based fallback)
 - Collapsible unknown-pricing banner with per-model ignore
 - All-time overview with sparse-month placeholders and year grouping
 
 **Languages**
+
 - English and 简体中文 (`burnRate.language` setting, `auto` by default)
 
 ---
@@ -122,10 +149,10 @@ them. Token volume is always tracked. To get dollar estimates, add two lines:
 ```json
 {
   "burnRate.customPricing": {
-    "glm-4.5":     { "input": 0.00, "output": 0.00, "cache_read": 0.00 },
-    "qwen-max":    { "input": 0.00, "output": 0.00 },
-    "kimi-k2":     { "input": 0.00, "output": 0.00 },
-    "deepseek-v3": { "input": 0.00, "output": 0.00 }
+    "glm-4.5": { "input": 0.0, "output": 0.0, "cache_read": 0.0 },
+    "qwen-max": { "input": 0.0, "output": 0.0 },
+    "kimi-k2": { "input": 0.0, "output": 0.0 },
+    "deepseek-v3": { "input": 0.0, "output": 0.0 }
   }
 }
 ```
