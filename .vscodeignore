@@ -34,6 +34,10 @@ I18N_CONVENTIONS.md
 # Safety: orphaned compiled outputs from deleted sources
 out/remotePricing.*
 
+# CLI — shipped separately as the `burnrate-cli` npm package, not in VSIX
+out/cli/**
+cli-pkg/**
+
 # Icon source — only ship the PNG
 icon.svg
 

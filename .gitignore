@@ -8,3 +8,9 @@ Thumbs.db
 folder-alias.json
 private-folder-alias.json
 CLAUDE.local.md
+
+# CLI package artifacts produced by cli-pkg/prepare.js — rebuilt at every publish
+cli-pkg/dist/
+cli-pkg/LICENSE
+cli-pkg/*.tgz
+cli-pkg/node_modules/

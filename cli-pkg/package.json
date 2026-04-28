@@ -1,0 +1,48 @@
+{
+  "name": "burnrate-cli",
+  "version": "2.1.0",
+  "description": "Terminal cost & quota tracker for Claude Code and Codex CLI. Reads local logs, prints today's tokens / month overview / Codex weekly quota — zero config, no API keys, no telemetry.",
+  "license": "MIT",
+  "author": "litchiak",
+  "homepage": "https://github.com/litchia/burnrate",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/litchia/burnrate.git",
+    "directory": "cli-pkg"
+  },
+  "bugs": {
+    "url": "https://github.com/litchia/burnrate/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "codex",
+    "codex-cli",
+    "openai",
+    "anthropic",
+    "cost",
+    "tokens",
+    "quota",
+    "burn-rate",
+    "cli",
+    "ccusage",
+    "glm",
+    "qwen",
+    "kimi",
+    "deepseek"
+  ],
+  "bin": {
+    "burnrate": "./dist/cli/index.js"
+  },
+  "files": [
+    "dist/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "prepublishOnly": "node prepare.js"
+  }
+}

@@ -78,6 +78,24 @@ one `burnRate.customPricing` entry away.
 Install from the VS Code Marketplace (or Open VSX), then run
 **`BurnRate: Show Dashboard`** from the Command Palette.
 
+Prefer the terminal? Run the CLI with no install:
+
+```bash
+npx burnrate-cli today        # tokens + implied spend
+npx burnrate-cli quota        # Codex weekly window status
+npx burnrate-cli month        # top projects + top day this month
+```
+
+Each interactive run prints a glanceable terminal summary **and** keeps a
+local dashboard at `http://localhost:5757` (next free port if busy). The
+URL is shown at the bottom; click it to load the same full-featured
+dashboard the VS Code extension renders — heatmaps, project bars, spike
+turns, Codex quota and all — with an EN / 中文 toggle added to the
+toolbar. Browser is never auto-opened; press Ctrl+C to quit. Pipe /
+`--json` / `--no-server` skip the server so scripts and agents stay
+non-blocking. See the [CLI README](https://github.com/litchia/burnrate/tree/main/cli-pkg)
+for full subcommand and flag reference.
+
 ---
 
 ## Compatible Editors

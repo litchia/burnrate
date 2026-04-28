@@ -1,5 +1,47 @@
 # Changelog
 
+## v2.1.0 — 2026-04-29
+
+### Added
+
+- **CLI distribution** as `burnrate-cli` on npm. Same analyzer, same data
+  sources as the VS Code extension; subcommands `today` / `month` / `all`
+  / `quota` print straight to the terminal with optional `--json` for
+  machine consumption. Fits the agent-IDE workflow where users live in
+  the terminal more than the Extensions tab.
+- **Local dashboard server with full extension parity** — every
+  interactive CLI run prints the terminal summary, then keeps a tiny
+  HTTP server alive on `http://localhost:5757` (next free port if busy)
+  and prints the URL at the bottom. The browser sees the same dashboard
+  the VS Code extension renders: provider switcher, range pills,
+  calendar + hourly heatmaps, project list with cost bars, model
+  breakdown, spike turns, Codex weekly quota with projection,
+  unknown-pricing banner. A bilingual EN / 中文 toggle is added to the
+  toolbar; otherwise the UI is identical. Achieved by serving the
+  unmodified webview HTML/JS plus a tiny browser-side bridge that
+  translates `vscode.postMessage` to `fetch('/api/data')`. Browser is
+  never auto-opened; Ctrl+C exits. Suppressed automatically when
+  stdout isn't a TTY, when `--json` is set, or when `--no-server` is
+  passed — so scripts, pipes, and agent invocations never hang.
+- `--pricing <path>` flag for the CLI to load `customPricing` overrides
+  from a JSON file (the VS Code settings store is not shared).
+- `--no-server` flag to opt out of the local dashboard server.
+- `--server` flag to force-start the dashboard server even when stdout
+  is not a TTY (CI / docker / reverse-proxy setups).
+
+### Changed
+
+- **Editorial redesign** of the dashboard webview (used by both the VS
+  Code extension and the CLI server). Replaces the generic
+  blue-on-graphite VS Code chrome with a refined editorial-telemetry
+  aesthetic: italic Iowan / Hoefler serif display, system mono for
+  numbers, warm graphite (or cream-paper light) palette, ember-orange
+  thermal accent that matches the BurnRate brand. The heatmap now uses
+  a literal yellow → orange → crimson temperature gradient instead of
+  the old generic-green scale. Pills, hairline rules, and ornamental
+  marks (`§`, `△`) anchor the editorial voice. Zero network: type stack
+  is system fonts only.
+
 ## v2.0.2 — 2026-04-28
 
 ### Changed
