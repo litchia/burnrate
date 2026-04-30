@@ -1,0 +1,162 @@
+name: Release
+
+# Tag-triggered publishes for the three BurnRate distribution targets:
+#   - VS Code Marketplace (vsce publish)
+#   - Open VSX Registry  (ovsx publish, used by Cursor / Windsurf / Trae)
+#   - npm package        (cli-pkg/, the `burnrate-cli` binary)
+#
+# Pushing a `v<x.y.z>` tag whose value matches package.json's `version`
+# kicks off the full release. `workflow_dispatch` lets you re-run a
+# release manually from the Actions tab (useful after rotating a PAT).
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   VSCE_PAT     Azure DevOps Personal Access Token, scope Marketplace → Manage
+#   OVSX_PAT     Open VSX access token (open-vsx.org → user settings → tokens)
+#   NPM_TOKEN    npm automation token, type "Automation" or "Granular" with
+#                publish access for `burnrate-cli`
+#
+# Safety: the verify job aborts the release if the pushed tag and
+# package.json drift, so a typo'd tag never publishes the wrong thing.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (e.g. v2.2.0). Must already exist."
+        required: true
+
+permissions:
+  contents: write   # for creating the GitHub Release
+  id-token: write   # reserved for npm provenance once we opt in
+
+jobs:
+  release:
+    name: Publish ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "ref=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          # Required for `npm publish` against the public registry. The
+          # NODE_AUTH_TOKEN env var (set per-step below) is what npm
+          # actually reads from this config.
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Verify tag matches package.json version
+        run: |
+          tag="${{ steps.tag.outputs.ref }}"
+          version="${tag#v}"
+          pkg_version=$(node -p "require('./package.json').version")
+          if [ "$version" != "$pkg_version" ]; then
+            echo "::error::Tag $tag (version=$version) does not match package.json version $pkg_version" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compile
+        run: npm run compile
+
+      - name: Sanity-check shipped webview assets
+        run: |
+          test -f out/extension.js
+          test -f src/webview/index.html
+          test -f src/webview/main.js
+
+      # ---------------------------------------------------------------
+      # Package the VSIX once and reuse it for: marketplace publish,
+      # open-vsx publish, and the GitHub Release attachment.
+      # ---------------------------------------------------------------
+      - name: Package VSIX
+        run: npx --yes @vscode/vsce package --no-dependencies
+
+      - name: Publish to VS Code Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "::error::VSCE_PAT secret is not set"; exit 1
+          fi
+          npx --yes @vscode/vsce publish --packagePath "burnrate-${version}.vsix"
+
+      - name: Publish to Open VSX
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          if [ -z "$OVSX_PAT" ]; then
+            echo "::error::OVSX_PAT secret is not set"; exit 1
+          fi
+          npx --yes ovsx publish "burnrate-${version}.vsix" -p "$OVSX_PAT"
+
+      # ---------------------------------------------------------------
+      # CLI npm package — assembled by cli-pkg/prepare.js (also runs
+      # via prepublishOnly, but we invoke it explicitly so failures show
+      # up before npm publish starts uploading).
+      # ---------------------------------------------------------------
+      - name: Prepare cli-pkg
+        run: |
+          cd cli-pkg
+          node prepare.js
+
+      - name: Publish burnrate-cli to npm
+        working-directory: cli-pkg
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::NPM_TOKEN secret is not set"; exit 1
+          fi
+          # `--access public` is implicit for unscoped packages but we
+          # set it explicitly so a future scope rename keeps working.
+          npm publish --access public
+
+      # ---------------------------------------------------------------
+      # GitHub Release: attaches the VSIX so users can sideload it on
+      # editors that don't auto-pull from Open VSX, and surfaces the
+      # CHANGELOG section for this version as the release notes.
+      # ---------------------------------------------------------------
+      - name: Extract CHANGELOG section
+        id: notes
+        run: |
+          version="${{ env.version }}"
+          # Find the lines between `## v$version` and the next `## v`
+          # heading, exclusive on both ends.
+          awk -v v="## v${version}" '
+            $0 ~ "^"v" " { found=1; next }
+            found && /^## v/      { exit }
+            found                  { print }
+          ' CHANGELOG.md > /tmp/notes.md
+          if [ ! -s /tmp/notes.md ]; then
+            echo "::warning::No CHANGELOG section found for v${version}"
+            echo "(no release notes — see CHANGELOG.md)" > /tmp/notes.md
+          fi
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${version}" \
+            --title "BurnRate v${version}" \
+            --notes-file /tmp/notes.md \
+            "burnrate-${version}.vsix"

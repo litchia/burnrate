@@ -189,6 +189,24 @@ defaults to "broken until proven safe".**
 - Don't push without user explicit go-ahead.
 - Don't auto-publish to Marketplace until v2.0 ships.
 
+### Release pipeline
+
+`.github/workflows/release.yml` triggers on `v*` tag push and runs all
+three publishes in one job:
+- VS Code Marketplace (`vsce publish` w/ `secrets.VSCE_PAT`)
+- Open VSX           (`ovsx publish` w/ `secrets.OVSX_PAT`)
+- npm `burnrate-cli` (`npm publish` w/ `secrets.NPM_TOKEN`,
+  package assembled by `cli-pkg/prepare.js`)
+
+A pre-flight step refuses to publish unless the tag matches
+`package.json#version`. After all three succeed it creates a GitHub
+Release with the VSIX attached and the matching `CHANGELOG.md`
+section as release notes.
+
+**Don't put PATs on the dev machine.** All three secrets live only in
+GitHub repo Settings → Secrets and variables → Actions. Manual reruns
+go through Actions → Release → Run workflow with the tag input.
+
 ## What's NOT here
 
 - No telemetry, ever.
