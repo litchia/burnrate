@@ -55,8 +55,17 @@ function monthKey(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
 }
 
+function weekKey(): string {
+  // Rolling 7-day window ending today, inclusive — the design's "this
+  // week" pill follows the dashboard convention more than ISO weeks.
+  const d = new Date();
+  d.setDate(d.getDate() - 6);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 function sinceForRange(range: DashboardRange): string | undefined {
   if (range === "today") return todayKey();
+  if (range === "week") return weekKey();
   if (range === "month") return monthKey();
   return undefined;
 }
@@ -95,10 +104,16 @@ function shouldStartServer(args: CliArgs): boolean {
  * downstream callers can `await` and exit.
  */
 async function serveAndWait(args: CliArgs, pricing: PricingResolution): Promise<void> {
+  // CLI users set their monthly budget via env var; the VS Code
+  // extension threads it through `burnRate.monthlyBudget`. Both end
+  // up in pricingMeta so the webview hero card can render the bar.
+  const rawBudget = Number(process.env.BURNRATE_MONTHLY_BUDGET);
+  const monthlyBudget = isFinite(rawBudget) && rawBudget > 0 ? rawBudget : 0;
   const handle = await startServer({
     cliVersion: VERSION,
     customPricingCount: pricing.customCount,
     initialProvider: args.provider,
+    monthlyBudget,
     analyze: (range, provider) =>
       runAnalyzer(pricing.table, args, {
         provider,

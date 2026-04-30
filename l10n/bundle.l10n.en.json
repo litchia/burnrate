@@ -160,5 +160,56 @@
   "Codex: {0} tokens": "Codex: {0} tokens",
   "Total implied spend: {0}": "Total implied spend: {0}",
   "No activity recorded yet today.": "No activity recorded yet today.",
-  "Click to open dashboard.": "Click to open dashboard."
+  "Click to open dashboard.": "Click to open dashboard.",
+
+  "All tools": "All tools",
+  "Week": "Week",
+  "Month": "Month",
+  "All time": "All time",
+  "{0} sessions synced · last update {1}": "{0} sessions synced · last update {1}",
+  "{0} sessions · awaiting pricing": "{0} sessions · awaiting pricing",
+  "These sessions are queued — pricing data not yet available.": "These sessions are queued — pricing data not yet available.",
+
+  "Burn rate": "Burn rate",
+  "/ day": "/ day",
+  "vs last week": "vs last week",
+  "{0} / {1} active days · {2}-day rolling avg": "{0} / {1} active days · {2}-day rolling avg",
+  "Monthly budget": "Monthly budget",
+  "of": "of",
+  "Set burnRate.monthlyBudget in settings to track pacing.": "Set burnRate.monthlyBudget in settings to track pacing.",
+  "Top project": "Top project",
+
+  "Total spend (month)": "Total spend (month)",
+  "{0} prompts · {1} convos · {2} switches": "{0} prompts · {1} convos · {2} switches",
+  "Tokens": "Tokens",
+  "Cache hit": "Cache hit",
+  "By tool": "By tool",
+
+  "Daily activity": "Daily activity",
+  "Active day": "Active day",
+  "Quiet day": "Quiet day",
+  "Total": "Total",
+  "less": "less",
+  "more": "more",
+  "Look at this batch's top-cost session.": "Look at this batch's top-cost session.",
+  "Review which models drove burn that day.": "Review which models drove burn that day.",
+  "Compare month-over-month tool mix.": "Compare month-over-month tool mix.",
+  "(no detailed sessions cached for this project)": "(no detailed sessions cached for this project)",
+
+  "By model": "By model",
+  "calls": "calls",
+  "free": "free",
+
+  "Top burns": "Top burns",
+  "Priced > $1.00 / batch · unpriced ranked by token volume": "Priced > $1.00 / batch · unpriced ranked by token volume",
+  "batches": "batches",
+  "No spike batches in this range.": "No spike batches in this range.",
+
+  "Theme": "Theme",
+  "Auto": "Auto",
+  "Light": "Light",
+  "Dark": "Dark",
+  "Follow system theme": "Follow system theme",
+  "Light theme": "Light theme",
+  "Dark theme": "Dark theme"
 }

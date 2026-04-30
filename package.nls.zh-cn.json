@@ -11,5 +11,6 @@
   "config.spikeThresholdUsd.description": "将超过此 USD 消费的助手轮次标记为高消费。",
   "config.ignoredUnpricedModels.markdownDescription": "从未定价警告横幅中隐藏的模型。这些模型仍按未定价（$0）计入，除非你将其添加到 `burnRate.customPricing`。",
   "config.showStatusBar.description": "在状态栏显示今日 Token 使用量。",
-  "config.statusBarRefreshSeconds.description": "状态栏刷新今日用量的频率（秒）。"
+  "config.statusBarRefreshSeconds.description": "状态栏刷新今日用量的频率（秒）。",
+  "config.monthlyBudget.description": "月度 USD 预算 — 显示在仪表盘的燃烧率英雄区域。设为 0 时隐藏预算条。"
 }

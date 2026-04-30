@@ -141,6 +141,14 @@ export const BRIDGE_JS = String.raw`
             var provider = msg.provider || s.provider || "all";
             return fetchData(range, provider);
           }
+          case "setLocale": {
+            // CLI mode owns the i18n bundle locally; just flip and ask
+            // the webview to re-render with the new locale.
+            var newLocale = msg.locale === "zh-cn" ? "zh-cn" : "en";
+            pushLocale(newLocale);
+            paintLangPills();
+            return;
+          }
           case "openSettings": {
             // Settings live in the VS Code extension. We tell the user
             // how to configure pricing in CLI mode without dragging

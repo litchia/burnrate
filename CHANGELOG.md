@@ -1,5 +1,40 @@
 # Changelog
 
+## v2.2.0 — 2026-04-30
+
+### Changed
+
+- **Full dashboard redesign** — implemented from the design handoff
+  (`design_handoff_burnrate/`, now removed; the design has been
+  consumed and lives in code). New visual language: warm dark surfaces
+  in OKLCH, fire-tone gradient ramp (gold → orange → red-orange →
+  ember) used everywhere intensity matters, JetBrains-Mono numbers, a
+  burn-rate hero with a 56px gradient-clipped headline, calendar
+  heatmap, projects list with stacked Claude/Codex ratio bars,
+  models list with per-tool gradient bars, and a danger-tinted "top
+  burns" batch table. Light theme follows `prefers-color-scheme` and
+  the existing `body.vscode-light` hook.
+- Webview-driven EN / 中文 toggle is now first-class — clicking the
+  pill on the dashboard sends `setLocale` to the host, which flips the
+  active locale and re-pushes the i18n bundle without restarting the
+  editor or the CLI session.
+
+### Added
+
+- `burnRate.monthlyBudget` setting — when > 0, the burn-rate hero
+  shows a budget bar with a projected month-end marker. CLI users can
+  set the same value via the `BURNRATE_MONTHLY_BUDGET` env var.
+- New range pill: **Week** (rolling 7-day window). Both the VS Code
+  extension and the CLI server resolve `since` for it.
+
+### Internal
+
+- `i18n.setOverride()` lets the webview override the `burnRate.language`
+  setting at runtime without touching the user's settings.json.
+- New runtime i18n keys for the redesign (Burn rate, Monthly budget,
+  Top burns, Daily activity, etc.) — both bundles updated, parity
+  checked at 180 / 180.
+
 ## v2.1.0 — 2026-04-29
 
 ### Added

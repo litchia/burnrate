@@ -2,7 +2,7 @@
   "name": "burnrate",
   "displayName": "BurnRate",
   "description": "Local cost & quota dashboard for Claude Code and Codex CLI - zero config, privacy-first",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "publisher": "litchiak",
   "license": "MIT",
   "repository": {
@@ -78,6 +78,12 @@
           "default": 300,
           "minimum": 30,
           "description": "%config.statusBarRefreshSeconds.description%"
+        },
+        "burnRate.monthlyBudget": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "description": "%config.monthlyBudget.description%"
         }
       }
     }

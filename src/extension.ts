@@ -7,7 +7,7 @@ import * as i18n from "./i18n";
 import { registerStatusBar } from "./statusBar";
 
 let panel: vscode.WebviewPanel | undefined;
-let currentRange: "today" | "month" | "all" = "month";
+let currentRange: "today" | "week" | "month" | "all" = "month";
 let currentProvider: ProviderFilter = "all";
 
 export function activate(context: vscode.ExtensionContext) {
@@ -58,14 +58,19 @@ function showDashboard(context: vscode.ExtensionContext) {
   );
   panel.webview.onDidReceiveMessage(async (msg) => {
     if (msg?.type === "setRange") {
-      currentRange = msg.range;
+      currentRange = normalizeRange(msg.range);
+      if (msg.provider) currentProvider = normalizeProvider(msg.provider);
       await postData(context, panel!, currentRange, currentProvider);
     } else if (msg?.type === "setProvider") {
       currentProvider = normalizeProvider(msg.provider);
       await postData(context, panel!, currentRange, currentProvider);
     } else if (msg?.type === "ready") {
       currentProvider = normalizeProvider(msg.provider);
+      if (msg.range) currentRange = normalizeRange(msg.range);
       await postData(context, panel!, currentRange, currentProvider);
+    } else if (msg?.type === "setLocale") {
+      // Forward to the i18n module; it broadcasts an `i18n` message back.
+      i18n.setOverride(typeof msg.locale === "string" ? msg.locale : null);
     } else if (msg?.type === "openSettings") {
       vscode.commands.executeCommand("workbench.action.openSettings", "burnRate");
     } else if (msg?.type === "ignoreModel") {
@@ -79,7 +84,7 @@ function showDashboard(context: vscode.ExtensionContext) {
 async function postData(
   context: vscode.ExtensionContext,
   p: vscode.WebviewPanel,
-  range: "today" | "month" | "all",
+  range: "today" | "week" | "month" | "all",
   provider: ProviderFilter,
 ) {
   const requestId = nextRequestId();
@@ -93,12 +98,17 @@ async function postData(
     const ignoredUnpricedModels = normalizeStringArray(
       readConfigValue<unknown>("ignoredUnpricedModels", []),
     );
+    const rawBudget = readConfigValue<unknown>("monthlyBudget", 0);
+    const monthlyBudget: number =
+      typeof rawBudget === "number" && isFinite(rawBudget) && rawBudget > 0 ? rawBudget : 0;
     const pricing = new PricingTable(customPricing);
     const since = sinceFor(range);
     const result = await analyzeForProvider(provider, {
       since,
       pricing,
       spikeThreshold,
+      // For "week" we still want byDay buckets (heatmap + sparkline), so
+      // mirror the "month" treatment instead of the "today" hour buckets.
       includeHourBuckets: range === "today",
       includeBucketModels: range === "today" ? "hour" : "day",
     });
@@ -120,6 +130,7 @@ async function postData(
         builtinCount: Object.keys(BUILTIN_PRICING).length,
         spikeThreshold,
         ignoredUnpricedModels,
+        monthlyBudget,
       },
       i18n: i18n.getBundleForWebview(),
       locale: i18n.getActiveLocale(),
@@ -133,6 +144,11 @@ function normalizeProvider(value: unknown): ProviderFilter {
   return value === "claude-code" || value === "codex" ? value : "all";
 }
 
+function normalizeRange(value: unknown): "today" | "week" | "month" | "all" {
+  if (value === "today" || value === "week" || value === "month" || value === "all") return value;
+  return "month";
+}
+
 function readConfigValue<T>(key: string, fallback: T): T {
   return vscode.workspace.getConfiguration("burnRate").get<T>(key, fallback);
 }
@@ -143,9 +159,15 @@ function nextRequestId(): number {
   return requestSeq;
 }
 
-function sinceFor(range: "today" | "month" | "all"): string | undefined {
+function sinceFor(range: "today" | "week" | "month" | "all"): string | undefined {
   const now = new Date();
   if (range === "today") return localDateKey(now);
+  if (range === "week") {
+    // 7-day rolling window inclusive of today.
+    const start = new Date(now);
+    start.setDate(now.getDate() - 6);
+    return localDateKey(start);
+  }
   if (range === "month") {
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, "0");

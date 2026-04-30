@@ -1,6 +1,6 @@
 {
   "name": "burnrate-cli",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Terminal cost & quota tracker for Claude Code and Codex CLI. Reads local logs, prints today's tokens / month overview / Codex weekly quota — zero config, no API keys, no telemetry.",
   "license": "MIT",
   "author": "litchiak",

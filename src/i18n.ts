@@ -29,6 +29,9 @@ const SUPPORTED_LOCALES: ReadonlyArray<Locale> = ["en", "zh-cn"];
 const DEFAULT_LOCALE: Locale = "en";
 
 let active: Locale = DEFAULT_LOCALE;
+/** Webview-driven override (e.g. the EN / 中文 toggle in the dashboard). When
+ *  set, wins over the `burnRate.language` setting until cleared with `null`. */
+let override: Locale | null = null;
 const bundles: Record<Locale, Bundle> = { en: {}, "zh-cn": {} };
 const emitter = new vscode.EventEmitter<Locale>();
 
@@ -50,6 +53,24 @@ export function init(context: vscode.ExtensionContext): vscode.Disposable {
 
 export function getActiveLocale(): Locale {
   return active;
+}
+
+/**
+ * Override the active locale at runtime — used by the webview's EN / 中文
+ * pill so users can flip language without touching the settings file.
+ * Pass `null` to clear and fall back to the `burnRate.language` setting.
+ */
+export function setOverride(locale: string | null): void {
+  if (locale === null) {
+    override = null;
+  } else if (locale === "en" || locale === "zh-cn") {
+    override = locale;
+  } else {
+    return; // unknown locale string — ignore silently
+  }
+  const previous = active;
+  recompute();
+  if (active !== previous) emitter.fire(active);
 }
 
 /**
@@ -110,6 +131,10 @@ function loadBundle(context: vscode.ExtensionContext, fileName: string): Bundle 
 }
 
 function recompute(): void {
+  if (override !== null) {
+    active = override;
+    return;
+  }
   const setting = String(
     vscode.workspace.getConfiguration("burnRate").get("language", "auto"),
   ).toLowerCase();

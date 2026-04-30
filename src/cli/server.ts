@@ -27,7 +27,7 @@ import { BRIDGE_JS } from "./bridge";
 const PORT_START = 5757;
 const PORT_END = 5765;
 
-export type DashboardRange = "today" | "month" | "all";
+export type DashboardRange = "today" | "week" | "month" | "all";
 
 export interface ServerOptions {
   /**
@@ -42,6 +42,8 @@ export interface ServerOptions {
   customPricingCount: number;
   /** From --provider on the CLI invocation; used as the initial pill. */
   initialProvider: "all" | "claude-code" | "codex";
+  /** Optional monthly USD budget — surfaced in the burn-rate hero. */
+  monthlyBudget?: number;
 }
 
 export interface ServerHandle {
@@ -144,12 +146,14 @@ function buildPricingMeta(opts: ServerOptions): {
   builtinCount: number;
   spikeThreshold: number;
   ignoredUnpricedModels: string[];
+  monthlyBudget: number;
 } {
   return {
     customCount: opts.customPricingCount,
     builtinCount: Object.keys(BUILTIN_PRICING).length,
     spikeThreshold: 1.0,
     ignoredUnpricedModels: [],
+    monthlyBudget: opts.monthlyBudget ?? 0,
   };
 }
 
@@ -178,7 +182,7 @@ export async function startServer(opts: ServerOptions): Promise<ServerHandle> {
     if (url.startsWith("/api/data")) {
       const u = new URL("http://x" + url);
       const range = (u.searchParams.get("range") || "month") as DashboardRange;
-      if (range !== "today" && range !== "month" && range !== "all") {
+      if (range !== "today" && range !== "week" && range !== "month" && range !== "all") {
         res.statusCode = 400;
         res.end(JSON.stringify({ error: "invalid range" }));
         return;

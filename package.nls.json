@@ -11,5 +11,6 @@
   "config.spikeThresholdUsd.description": "Mark assistant turns above this USD cost as spikes.",
   "config.ignoredUnpricedModels.markdownDescription": "Models to suppress from the unknown-pricing warning banner. They still count as unpriced ($0) unless you add them to `burnRate.customPricing`.",
   "config.showStatusBar.description": "Show today's token usage in the status bar.",
-  "config.statusBarRefreshSeconds.description": "How often the status bar refreshes today's usage, in seconds."
+  "config.statusBarRefreshSeconds.description": "How often the status bar refreshes today's usage, in seconds.",
+  "config.monthlyBudget.description": "Monthly USD budget — surfaced in the dashboard's burn-rate hero. Set to 0 to hide the budget bar."
 }

@@ -142,5 +142,56 @@
   "Codex: {0} tokens": "Codex：{0} Token",
   "Total implied spend: {0}": "等效消费合计：{0}",
   "No activity recorded yet today.": "今日暂无使用记录。",
-  "Click to open dashboard.": "点击打开仪表盘。"
+  "Click to open dashboard.": "点击打开仪表盘。",
+
+  "All tools": "全部工具",
+  "Week": "本周",
+  "Month": "本月",
+  "All time": "全部时间",
+  "{0} sessions synced · last update {1}": "已同步 {0} 个会话 · 更新于 {1}",
+  "{0} sessions · awaiting pricing": "{0} 个会话 · 缺定价",
+  "These sessions are queued — pricing data not yet available.": "以下会话尚未估算，已暂存待补。",
+
+  "Burn rate": "燃烧率",
+  "/ day": "/ 天",
+  "vs last week": "vs 上周",
+  "{0} / {1} active days · {2}-day rolling avg": "{0} / {1} 个活跃日 · {2} 天滚动均值",
+  "Monthly budget": "月度预算",
+  "of": "已用",
+  "Set burnRate.monthlyBudget in settings to track pacing.": "在设置中配置 burnRate.monthlyBudget 以跟踪月度节奏。",
+  "Top project": "消费最多项目",
+
+  "Total spend (month)": "总消费 (本月)",
+  "{0} prompts · {1} convos · {2} switches": "{0} 轮对话 · {1} 会话 · {2} 次模型转移",
+  "Tokens": "Token 用量",
+  "Cache hit": "缓存命中",
+  "By tool": "按工具",
+
+  "Daily activity": "按日活跃度",
+  "Active day": "活跃日",
+  "Quiet day": "静悄日",
+  "Total": "合计",
+  "less": "少",
+  "more": "多",
+  "Look at this batch's top-cost session.": "查看当批次最高成本会话。",
+  "Review which models drove burn that day.": "回看当日驱动消费的模型。",
+  "Compare month-over-month tool mix.": "比较月度工具用量结构。",
+  "(no detailed sessions cached for this project)": "（该项目暂无缓存的会话详情）",
+
+  "By model": "按模型",
+  "calls": "调用",
+  "free": "免费",
+
+  "Top burns": "高消费批次",
+  "Priced > $1.00 / batch · unpriced ranked by token volume": "已定价高消费：>$1.00/批 · 未定价按 Token 量排序",
+  "batches": "批次",
+  "No spike batches in this range.": "此范围内暂无高消费批次。",
+
+  "Theme": "主题",
+  "Auto": "跟随系统",
+  "Light": "浅色",
+  "Dark": "深色",
+  "Follow system theme": "跟随系统主题",
+  "Light theme": "浅色主题",
+  "Dark theme": "深色主题"
 }
